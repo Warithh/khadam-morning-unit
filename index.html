@@ -139,7 +139,7 @@
     .names { list-style: none; margin: 0; padding: 0; }
     .names li {
       display: grid;
-      grid-template-columns: 28px minmax(0, 1fr) minmax(150px, 230px);
+      grid-template-columns: 28px minmax(0, 1fr);
       gap: 8px 12px;
       align-items: center;
       padding: 7px 8px;
@@ -187,7 +187,9 @@
     .check { display: flex; align-items: center; gap: 8px; min-height: 44px; color: var(--ink); font-size: 1rem; }
     .person, .site-edit { padding: 14px 0; border-top: 1px solid var(--line); }
     .person { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 8px 12px; align-items: end; }
-    .span4 { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+    .fields { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px; }
+    .person-site { color: var(--soft); font-size: 0.86rem; margin-top: 2px; }
+    .linkish { background: transparent; border: 0; color: var(--pine-2); font-weight: 700; padding: 0; min-height: auto; text-decoration: underline; text-underline-offset: 3px; }
     .site-edit { display: grid; gap: 10px; }
     .site-row { display: flex; justify-content: space-between; gap: 12px; align-items: end; }
     .site-row label:first-child { flex: 1; }
@@ -198,9 +200,7 @@
     .zone-line input { flex: 1; }
     .error { color: var(--danger); font-weight: 600; }
     @media (max-width: 800px) {
-      .top .wrap, .dayline, .add, #add-site, .span4 { display: grid; grid-template-columns: 1fr; }
-      .names li { grid-template-columns: 28px minmax(0, 1fr); }
-      .names li select { grid-column: 1 / -1; width: 100%; }
+      .top .wrap, .dayline, .add, #add-site, .fields { display: grid; grid-template-columns: 1fr; }
       .person { grid-template-columns: 1fr; }
       .sheet-actions {
         position: fixed;
@@ -268,11 +268,11 @@
       <section id="panel-people" class="panel">
         <div class="block">
           <h2>المنتسبون</h2>
-          <p class="hint">من كان في يوم استراحته، أو مجازاً، يبقى خارج توزيع ذلك اليوم.</p>
+          <p class="hint">هنا فقط تعدّل الاسم والاستراحة والإجازة وموقع العمل. كل منتسب يظهر مرة واحدة، ولا يُكرَّر في موقعين.</p>
           <form id="add-person" class="add">
             <label>الاسم<input name="name" required placeholder="اسم المنتسب" autocomplete="off"></label>
             <label>يوم الاستراحة<select name="rest"></select></label>
-            <label>الموقع<select name="site"></select></label>
+            <label>موقع العمل<select name="site"></select></label>
             <button class="solid" type="submit">إضافة</button>
           </form>
           <p id="add-error" class="error" hidden></p>
@@ -287,7 +287,7 @@
       <section id="panel-sites" class="panel">
         <div class="block">
           <h2>المواقع</h2>
-          <p class="hint">الموقع المعلم بـ «جمعة فقط» يختفي من السبت إلى الخميس، ومنتسبوه يظهرون بانتظار موقع.</p>
+          <p class="hint">هنا أسماء المواقع وتفصيلاتها فقط. تعيين من يعمل فيها يتم من تبويب المنتسبون. الموقع المعلم بـ «جمعة فقط» يختفي من السبت إلى الخميس.</p>
           <form id="add-site" class="add">
             <label>اسم الموقع<input name="title" required placeholder="مثال: صحيات رقم 12" autocomplete="off"></label>
             <label class="check"><input name="fridayOnly" type="checkbox"> جمعة فقط</label>
@@ -440,12 +440,14 @@
       const rest = [];
       const leave = [];
       const waiting = [];
+      const used = new Set();
       state.people.forEach((person) => {
+        if (used.has(person.id)) return;
+        used.add(person.id);
         if (person.leave) { leave.push(person); return; }
         if (person.rest === day) { rest.push(person); return; }
-        const override = state.daily[dateISO] && state.daily[dateISO][person.id];
-        const siteId = override ? override.siteId : person.site;
-        const zoneId = override ? override.zoneId : person.zone;
+        const siteId = person.site;
+        const zoneId = person.zone;
         if (!siteId || !openIds.has(siteId)) { waiting.push(person); return; }
         bySite.get(siteId).push({ person, zoneId: zoneId || "" });
       });
@@ -460,7 +462,7 @@
         ""
       ];
       view.openSites.forEach((site) => {
-        const rows = view.bySite.get(site.id) || [];
+        const rows = uniqueRows(view.bySite.get(site.id) || []);
         if (!rows.length) return;
         lines.push("*" + site.title + "*");
         rows.forEach((row, index) => {
@@ -473,13 +475,13 @@
         view.waiting.forEach((person, index) => lines.push((index + 1) + "-" + person.name));
         lines.push("");
       }
-      const detailed = view.openSites.filter((site) => site.zones.length && (view.bySite.get(site.id) || []).some((row) => row.zoneId));
+      const detailed = view.openSites.filter((site) => site.zones.length && uniqueRows(view.bySite.get(site.id) || []).some((row) => row.zoneId));
       if (detailed.length) {
         lines.push("*خطه توزيع المهام على المنتسبين*");
         lines.push("");
         detailed.forEach((site) => {
           lines.push("*" + site.title + "*");
-          const rows = view.bySite.get(site.id) || [];
+          const rows = uniqueRows(view.bySite.get(site.id) || []);
           site.zones.forEach((zone) => {
             const names = rows.filter((row) => row.zoneId === zone.id).map((row) => row.person.name);
             if (!names.length) return;
@@ -490,6 +492,14 @@
         });
       }
       return lines.join("\n").trim() + "\n";
+    }
+    function uniqueRows(rows) {
+      const seen = new Set();
+      return rows.filter((row) => {
+        if (seen.has(row.person.id)) return false;
+        seen.add(row.person.id);
+        return true;
+      });
     }
 
     function setReport(text, dirty, note) {
@@ -521,33 +531,27 @@
       const dateISO = document.getElementById("work-date").value;
       const view = classify(dateISO);
       document.getElementById("day-label").textContent = DAY_NAME[view.day] + "   " + dateISO.split("-").join("/");
-      const working = [...view.bySite.values()].reduce((sum, rows) => sum + rows.length, 0);
+      const working = [...view.bySite.values()].reduce((sum, rows) => sum + uniqueRows(rows).length, 0);
       document.getElementById("stats").innerHTML = [
         ["في الدوام", working],
         ["استراحة", view.rest.length],
         ["إجازة", view.leave.length],
         ["بانتظار", view.waiting.length]
       ].map(([label, count]) => `<span>${label} <b>${count}</b></span>`).join("");
-      const blocks = [];
+      const blocks = [`<p class="hint">عرض يوم الدوام فقط. التعديل من <button type="button" class="linkish" data-go-people>تبويب المنتسبون</button>.</p>`];
       const post = (title, body) => `<section class="post"><h2>${title}</h2>${body}</section>`;
       view.openSites.forEach((site) => {
-        const rows = view.bySite.get(site.id) || [];
+        const rows = uniqueRows(view.bySite.get(site.id) || []);
         if (!rows.length) return;
         const items = rows.map((row, index) => `<li>
           <span class="idx">${index + 1}</span>
           <div><strong>${esc(row.person.name)}</strong>${row.person.note ? `<div class="note">${esc(row.person.note)}</div>` : ""}</div>
-          <select data-move="${esc(row.person.id)}" aria-label="نقل ${esc(row.person.name)}">${siteOptions(site.id, view.day)}</select>
         </li>`).join("");
         const tag = site.fridayOnly ? `<span class="tag">جمعة فقط</span>` : `<span class="count">${rows.length}</span>`;
         blocks.push(post(esc(site.title) + " " + tag, `<ol class="names">${items}</ol>`));
       });
       if (view.waiting.length) {
-        const items = view.waiting.map((person) => `<li>
-          <span class="idx">–</span>
-          <strong>${esc(person.name)}</strong>
-          <select data-move="${esc(person.id)}" aria-label="تعيين ${esc(person.name)}">${siteOptions("", view.day)}</select>
-        </li>`).join("");
-        blocks.push(post("بانتظار تحديد موقع <span class=\"count\">" + view.waiting.length + "</span>", `<p class="hint">موقعهم مغلق اليوم، أو لم يُحدد.</p><ul class="names">${items}</ul>`));
+        blocks.push(post("بانتظار تحديد موقع <span class=\"count\">" + view.waiting.length + "</span>", `<p class="hint">موقعهم مغلق اليوم، أو لم يُحدد. عيّن موقع العمل من تبويب المنتسبون.</p><ul class="plain">${view.waiting.map((p) => `<li>${esc(p.name)}</li>`).join("")}</ul>`));
       }
       if (view.rest.length) {
         blocks.push(post("استراحة هذا اليوم <span class=\"count\">" + view.rest.length + "</span>", `<p class="hint">لا يدخلون التوزيع.</p><ul class="plain">${view.rest.map((p) => `<li>${esc(p.name)}</li>`).join("")}</ul>`));
@@ -558,21 +562,38 @@
       document.getElementById("board").innerHTML = blocks.join("") || `<p class="hint">لا يوجد منتسبون في هذا اليوم.</p>`;
       if (!reportDirty) setReport(buildReport(dateISO), false, "");
     }
+    function nameTaken(name, exceptId) {
+      const key = name.trim();
+      return state.people.some((person) => person.id !== exceptId && person.name.trim() === key);
+    }
+    function personCard(person) {
+      const site = siteById(person.site);
+      const zones = site ? site.zones || [] : [];
+      const zoneField = zones.length
+        ? `<label>التفصيلة داخل الموقع<select name="zone">${zoneOptions(person.site, person.zone)}</select></label>`
+        : `<input type="hidden" name="zone" value="">`;
+      return `<form class="person" data-person="${esc(person.id)}">
+        <label>الاسم
+          <input name="name" value="${esc(person.name)}" required autocomplete="off">
+          <span class="person-site">${site ? esc(site.title) : "بلا موقع عمل بعد"}</span>
+        </label>
+        <label class="check"><input name="leave" type="checkbox"${person.leave ? " checked" : ""}> مجاز</label>
+        <button type="button" class="danger" data-delete-person="${esc(person.id)}">حذف</button>
+        <div class="fields">
+          <label>الاستراحة<select name="rest">${dayOptions(person.rest)}</select></label>
+          <label>موقع العمل<select name="site">${siteOptions(person.site)}</select></label>
+          ${zoneField}
+          <label>ملاحظة التقرير<input name="note" value="${esc(person.note)}" autocomplete="off"></label>
+        </div>
+      </form>`;
+    }
     function paintPeople() {
       armed = null;
-      const rows = state.people.filter((p) => !peopleQuery.trim() || p.name.includes(peopleQuery.trim())).map((person) => `
-        <form class="person" data-person="${esc(person.id)}">
-          <label>الاسم<input name="name" value="${esc(person.name)}" required autocomplete="off"></label>
-          <label class="check"><input name="leave" type="checkbox"${person.leave ? " checked" : ""}> مجاز</label>
-          <button type="button" class="danger" data-delete-person="${esc(person.id)}">حذف</button>
-          <div class="span4">
-            <label>الاستراحة<select name="rest">${dayOptions(person.rest)}</select></label>
-            <label>الموقع<select name="site">${siteOptions(person.site)}</select></label>
-            <label>التفصيلة<select name="zone">${zoneOptions(person.site, person.zone)}</select></label>
-            <label>ملاحظة التقرير<input name="note" value="${esc(person.note)}" autocomplete="off"></label>
-          </div>
-        </form>`).join("");
-      document.getElementById("people-list").innerHTML = rows || `<p class="hint">لا توجد نتيجة بهذا الاسم.</p>`;
+      const q = peopleQuery.trim();
+      const matched = state.people.filter((person) => !q || person.name.includes(q));
+      document.getElementById("people-list").innerHTML = matched.length
+        ? matched.map(personCard).join("")
+        : `<p class="hint">لا توجد نتيجة بهذا الاسم.</p>`;
       const addRest = document.querySelector("#add-person select[name=rest]");
       const addSite = document.querySelector("#add-person select[name=site]");
       const keepSite = addSite.value;
@@ -602,15 +623,27 @@
       if (!person) return;
       const name = form.name.value.trim();
       if (!name) { form.name.value = person.name; return; }
+      if (nameTaken(name, person.id)) {
+        form.name.setCustomValidity("هذا المنتسب موجود في القائمة");
+        form.name.reportValidity();
+        form.name.value = person.name;
+        form.name.setCustomValidity("");
+        return;
+      }
+      form.name.setCustomValidity("");
+      const nextSite = form.site ? form.site.value : "";
+      const siteChanged = nextSite !== person.site;
       person.name = name;
       person.rest = form.rest.value;
       person.leave = form.leave.checked;
-      person.site = form.site.value;
+      person.site = nextSite;
       const zones = (siteById(person.site) || {}).zones || [];
-      person.zone = zones.some((z) => z.id === form.zone.value) ? form.zone.value : "";
+      const picked = form.zone ? form.zone.value : "";
+      person.zone = (!siteChanged && zones.some((z) => z.id === picked)) ? picked : "";
       person.note = form.note.value.trim();
       save();
       paintBoard();
+      if (siteChanged) paintPeople();
     }
     function wantsConfirm(button, key, label) {
       if (armed && armed.button === button) { armed = null; return true; }
@@ -644,21 +677,6 @@
     window.addEventListener("resize", placeMark);
     document.fonts.ready.then(placeMark);
 
-    document.getElementById("board").addEventListener("change", (event) => {
-      const select = event.target.closest("select[data-move]");
-      if (!select) return;
-      const dateISO = dateInput.value;
-      const person = personById(select.dataset.move);
-      state.daily[dateISO] = state.daily[dateISO] || {};
-      if (!select.value) state.daily[dateISO][person.id] = { siteId: "", zoneId: "" };
-      else {
-        const site = siteById(select.value);
-        const zoneOk = site && site.zones.some((z) => z.id === person.zone);
-        state.daily[dateISO][person.id] = { siteId: select.value, zoneId: zoneOk ? person.zone : "" };
-      }
-      save();
-      paintBoard();
-    });
     document.getElementById("report").addEventListener("input", () => {
       reportDirty = true;
       const box = document.getElementById("report-note");
@@ -695,12 +713,16 @@
       filter.focus();
       filter.setSelectionRange(start, start);
     });
+    document.getElementById("board").addEventListener("click", (event) => {
+      if (event.target.closest("[data-go-people]")) showTab("people");
+    });
     document.getElementById("add-person").addEventListener("submit", (event) => {
       event.preventDefault();
       const form = event.target;
       const error = document.getElementById("add-error");
       const name = form.name.value.trim();
       if (!name) { error.hidden = false; error.textContent = "اكتب اسم المنتسب أولاً."; form.name.focus(); return; }
+      if (nameTaken(name)) { error.hidden = false; error.textContent = "هذا المنتسب موجود مسبقاً. عدّله من القائمة ولا تضفه مرتين."; form.name.focus(); return; }
       error.hidden = true;
       state.people.push({ id: nextId("p", state.people), name, rest: form.rest.value, site: form.site.value, zone: "", note: "", leave: false });
       form.reset();
@@ -712,7 +734,6 @@
       const form = event.target.closest("form[data-person]");
       if (!form) return;
       commitPeopleForm(form);
-      if (event.target.name === "site") form.zone.innerHTML = zoneOptions(form.site.value, personById(form.dataset.person).zone);
     });
     document.getElementById("people-list").addEventListener("focusout", (event) => {
       const form = event.target.closest("form[data-person]");
