@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#14382e">
+  <title>خطة خدام الوحدة الصباحية</title>
+  <meta name="description" content="توزيع واجبات خدام الوحدة الصباحية في شعبة المنشآت الصحية، مع تقرير جاهز للنسخ إلى واتساب.">
+  <style>
+    @font-face {
+      font-family: "Mada";
+      src: url("fonts/Mada.ttf") format("truetype");
+      font-weight: 200 900;
+      font-style: normal;
+      font-display: swap;
+    }
+    :root {
+      --ground: #e6ebe7;
+      --ink: #14211c;
+      --soft: #2c463c;
+      --field: #f7faf8;
+      --line: #c5d1ca;
+      --pine: #14382e;
+      --pine-2: #1c6b50;
+      --sheet: #fbfcfb;
+      --danger: #8d2b2b;
+      --ease: cubic-bezier(.16, 1, .3, 1);
+    }
+    * { box-sizing: border-box; }
+    html { height: 100%; }
+    body {
+      margin: 0;
+      min-height: 100%;
+      background: var(--ground);
+      color: var(--ink);
+      font-family: "Mada", "Segoe UI", Tahoma, sans-serif;
+      font-size: 16.5px;
+      line-height: 1.55;
+      font-variant-numeric: tabular-nums;
+    }
+    ::selection { background: #b7d4c6; color: #10241c; }
+    :focus-visible { outline: 2px solid var(--pine-2); outline-offset: 3px; }
+    button, input, select, textarea { font: inherit; color: inherit; }
+    button { cursor: pointer; }
+    h1, h2, p { margin: 0; }
+    .wrap { width: min(1120px, calc(100% - 32px)); margin-inline: auto; }
+    .top {
+      background: var(--pine);
+      color: #f4faf7;
+      padding: 22px 0 18px;
+    }
+    .top .wrap { display: flex; justify-content: space-between; gap: 18px; align-items: end; }
+    h1 { font-size: 1.65rem; font-weight: 700; letter-spacing: -0.02em; line-height: 1.25; }
+    .top p { margin-top: 4px; color: #d7ebe3; font-size: 0.98rem; }
+    .date-field { display: grid; gap: 6px; color: #d7ebe3; font-size: 0.86rem; }
+    input, select, textarea {
+      background: var(--field);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px 12px;
+      min-height: 44px;
+      min-width: 0;
+      max-width: 100%;
+      caret-color: var(--pine-2);
+    }
+    select { width: 100%; }
+    input::placeholder, textarea::placeholder { color: #3a554a; }
+    textarea {
+      width: 100%;
+      min-height: 460px;
+      resize: vertical;
+      line-height: 1.75;
+      scrollbar-width: thin;
+      scrollbar-color: #6e8f80 transparent;
+    }
+    textarea::-webkit-scrollbar { width: 10px; }
+    textarea::-webkit-scrollbar-thumb { background: #6e8f80; border-radius: 99px; }
+    .date-field input { color: var(--ink); color-scheme: light; min-width: 180px; }
+    .dayline {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px 24px;
+      align-items: baseline;
+      flex-wrap: wrap;
+      padding: 18px 0 14px;
+    }
+    #day-label { font-size: 1.45rem; font-weight: 700; letter-spacing: -0.02em; }
+    #stats { display: flex; flex-wrap: wrap; gap: 4px 14px; color: var(--soft); font-size: 0.95rem; }
+    #stats b { color: var(--ink); font-weight: 700; }
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 4;
+      display: flex;
+      gap: 4px;
+      background: var(--ground);
+      border-bottom: 1px solid var(--line);
+      margin-bottom: 8px;
+    }
+    .nav button {
+      appearance: none;
+      background: transparent;
+      border: 0;
+      color: var(--soft);
+      min-height: 48px;
+      padding: 12px 16px 14px;
+      border-radius: 0;
+    }
+    .nav button[aria-selected="true"] { color: var(--ink); font-weight: 700; }
+    .nav button:hover { color: var(--ink); }
+    .nav-mark {
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      height: 2px;
+      width: 0;
+      background: var(--pine);
+      pointer-events: none;
+      transition: transform .28s var(--ease), width .28s var(--ease);
+    }
+    .nav { position: sticky; }
+    main { padding-bottom: 48px; }
+    .panel { display: none; }
+    .panel.on { display: block; animation: arrive .32s var(--ease); }
+    @keyframes arrive {
+      from { opacity: .35; transform: translateY(10px); filter: blur(5px); }
+      to { opacity: 1; transform: none; filter: none; }
+    }
+    .work { display: grid; gap: 28px; align-items: start; }
+    @media (min-width: 980px) {
+      .work { grid-template-columns: minmax(0, 1.15fr) minmax(320px, .85fr); }
+      .sheet { position: sticky; top: 64px; }
+    }
+    .post { padding: 16px 0 6px; border-top: 1px solid var(--line); }
+    .post:first-child { border-top: 0; padding-top: 8px; }
+    h2 { font-size: 1.08rem; font-weight: 700; margin-bottom: 6px; }
+    h2 .count { color: var(--soft); font-size: 0.86rem; font-weight: 600; margin-inline-start: 8px; }
+    h2 .tag { color: var(--pine-2); font-size: 0.78rem; font-weight: 600; margin-inline-start: 8px; }
+    .names { list-style: none; margin: 0; padding: 0; }
+    .names li {
+      display: grid;
+      grid-template-columns: 28px minmax(0, 1fr) minmax(150px, 230px);
+      gap: 8px 12px;
+      align-items: center;
+      padding: 7px 8px;
+      border-radius: 10px;
+    }
+    .names li:hover { background: rgba(20, 56, 46, .045); }
+    .idx { color: var(--soft); font-weight: 600; }
+    .note { color: var(--soft); font-size: 0.9rem; margin-top: 2px; }
+    .plain { list-style: none; margin: 8px 0 0; padding: 0; }
+    .plain li { padding: 4px 0; }
+    .hint { color: var(--soft); font-size: 0.92rem; margin-top: 4px; }
+    .sheet {
+      background: var(--sheet);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: 0 16px 36px rgba(20, 33, 28, .08);
+      padding: 16px;
+    }
+    .sheet-head { display: flex; justify-content: space-between; gap: 12px; align-items: center; margin-bottom: 10px; }
+    .sheet-actions { display: flex; gap: 8px; }
+    button.solid, button.ghost, button.danger, button.texty {
+      min-height: 44px;
+      border-radius: 10px;
+      padding: 8px 14px;
+    }
+    button.solid { background: var(--pine); color: #f4faf7; border: 0; }
+    button.solid:hover { background: #1b4a3c; }
+    button.solid.is-done { background: var(--pine-2); }
+    button.ghost { background: transparent; color: var(--pine); border: 1px solid var(--pine-2); }
+    button.ghost:hover { background: rgba(20, 56, 46, .06); }
+    button.danger, button.texty { background: transparent; border: 0; color: var(--danger); padding-inline: 8px; }
+    button.texty { color: var(--pine); }
+    button:active { transform: translateY(1px); }
+    .live { min-height: 1.3em; color: var(--pine-2); margin-top: 8px; font-weight: 600; }
+    .warn { color: #6a3d16; background: #f4e7d4; border-radius: 10px; padding: 8px 10px; margin-bottom: 10px; }
+    .block { padding-top: 8px; }
+    .add {
+      display: grid;
+      grid-template-columns: 1.4fr .8fr 1.2fr auto;
+      gap: 10px;
+      align-items: end;
+      padding-bottom: 8px;
+    }
+    .add label, .person label, .site-edit label { display: grid; gap: 4px; color: var(--soft); font-size: 0.84rem; }
+    .check { display: flex; align-items: center; gap: 8px; min-height: 44px; color: var(--ink); font-size: 1rem; }
+    .person, .site-edit { padding: 14px 0; border-top: 1px solid var(--line); }
+    .person { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 8px 12px; align-items: end; }
+    .span4 { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+    .site-edit { display: grid; gap: 10px; }
+    .site-row { display: flex; justify-content: space-between; gap: 12px; align-items: end; }
+    .site-row label:first-child { flex: 1; }
+    #add-site { grid-template-columns: minmax(0, 1fr) auto auto; }
+    .zones { display: grid; gap: 8px; }
+    .zones .texty, .site-edit > .danger { width: auto; justify-self: start; }
+    .zone-line { display: flex; gap: 8px; }
+    .zone-line input { flex: 1; }
+    .error { color: var(--danger); font-weight: 600; }
+    @media (max-width: 800px) {
+      .top .wrap, .dayline, .add, #add-site, .span4 { display: grid; grid-template-columns: 1fr; }
+      .names li { grid-template-columns: 28px minmax(0, 1fr); }
+      .names li select { grid-column: 1 / -1; width: 100%; }
+      .person { grid-template-columns: 1fr; }
+      .sheet-actions {
+        position: fixed;
+        inset-inline: 0;
+        bottom: 0;
+        z-index: 6;
+        background: var(--pine);
+        padding: 10px 14px calc(10px + env(safe-area-inset-bottom));
+      }
+      .sheet-actions button { flex: 1; }
+      .sheet-actions .solid { background: #f4faf7; color: var(--pine); }
+      .sheet-actions .ghost { color: #f4faf7; border-color: #b7d4c6; }
+      body { padding-bottom: 76px; }
+      .site-row { display: grid; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .panel.on { animation: none; }
+      .nav-mark { transition: none; }
+      button:active { transform: none; }
+    }
+  </style>
+</head>
+<body>
+  <header class="top">
+    <div class="wrap">
+      <div>
+        <h1>خطة عمل الوحدة الصباحية</h1>
+        <p>شعبة المنشآت الصحية — العتبة العلوية المقدسة</p>
+      </div>
+      <label class="date-field">تاريخ الدوام
+        <input id="work-date" type="date">
+      </label>
+    </div>
+  </header>
+  <div class="wrap">
+    <div class="dayline">
+      <p id="day-label"></p>
+      <p id="stats"></p>
+    </div>
+    <nav class="nav" id="nav">
+      <button type="button" data-tab="plan" aria-selected="true">التوزيع</button>
+      <button type="button" data-tab="people" aria-selected="false">المنتسبون</button>
+      <button type="button" data-tab="sites" aria-selected="false">المواقع</button>
+      <span class="nav-mark" id="nav-mark"></span>
+    </nav>
+    <main>
+      <section id="panel-plan" class="panel on">
+        <div class="work">
+          <div id="board"></div>
+          <section class="sheet">
+            <div class="sheet-head">
+              <h2>تقرير المجموعة</h2>
+              <div class="sheet-actions">
+                <button type="button" class="solid" id="copy-report">نسخ التقرير</button>
+                <button type="button" class="ghost" id="rebuild-report">إعادة البناء</button>
+              </div>
+            </div>
+            <p id="report-note" class="warn" hidden></p>
+            <textarea id="report" dir="rtl" spellcheck="false" aria-label="نص التقرير"></textarea>
+            <p class="live" id="copy-msg" aria-live="polite"></p>
+          </section>
+        </div>
+      </section>
+
+      <section id="panel-people" class="panel">
+        <div class="block">
+          <h2>المنتسبون</h2>
+          <p class="hint">من كان في يوم استراحته، أو مجازاً، يبقى خارج توزيع ذلك اليوم.</p>
+          <form id="add-person" class="add">
+            <label>الاسم<input name="name" required placeholder="اسم المنتسب" autocomplete="off"></label>
+            <label>يوم الاستراحة<select name="rest"></select></label>
+            <label>الموقع<select name="site"></select></label>
+            <button class="solid" type="submit">إضافة</button>
+          </form>
+          <p id="add-error" class="error" hidden></p>
+          <label class="hint">بحث في الأسماء
+            <input id="people-filter" placeholder="جزء من الاسم" autocomplete="off">
+          </label>
+          <div id="people-list"></div>
+          <p><button type="button" class="danger" id="reset-data">إرجاع الخطة الأصلية</button></p>
+        </div>
+      </section>
+
+      <section id="panel-sites" class="panel">
+        <div class="block">
+          <h2>المواقع</h2>
+          <p class="hint">الموقع المعلم بـ «جمعة فقط» يختفي من السبت إلى الخميس، ومنتسبوه يظهرون بانتظار موقع.</p>
+          <form id="add-site" class="add">
+            <label>اسم الموقع<input name="title" required placeholder="مثال: صحيات رقم 12" autocomplete="off"></label>
+            <label class="check"><input name="fridayOnly" type="checkbox"> جمعة فقط</label>
+            <button class="solid" type="submit">إضافة الموقع</button>
+          </form>
+          <p id="site-error" class="error" hidden></p>
+          <div id="sites-list"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script>
+    const DAYS = [
+      { id: "sat", name: "السبت" },
+      { id: "sun", name: "الأحد" },
+      { id: "mon", name: "الاثنين" },
+      { id: "tue", name: "الثلاثاء" },
+      { id: "wed", name: "الأربعاء" },
+      { id: "thu", name: "الخميس" },
+      { id: "fri", name: "الجمعة" }
+    ];
+    const DAY_NAME = Object.fromEntries(DAYS.map((d) => [d.id, d.name]));
+    const STORE_KEY = "khadam-morning-unit-v1";
+
+    function seed() {
+      const zone = (id, label) => ({ id, label });
+      const sites = [
+        { id: "s4", title: "صحيات رقم (4)", fridayOnly: false, zones: [
+          zone("s4a", "الممر رقم (1 - 2 - 3)"),
+          zone("s4b", "الممر رقم (4 - 5 - 6)"),
+          zone("s4c", "احواض الوضوء+الباحه"),
+          zone("s4d", "المدخل +السلالم")
+        ]},
+        { id: "s5", title: "صحيات رقم (5)", fridayOnly: false, zones: [
+          zone("s5a", "الممر رقم (1 - 2)"),
+          zone("s5b", "الممر رقم (3 - 4 - 5)"),
+          zone("s5c", "احواض الوضوء + الباحه"),
+          zone("s5d", "المدخل + السلالم")
+        ]},
+        { id: "s7", title: "صحيات رقم 7 (السقايه)", fridayOnly: false, zones: [] },
+        { id: "s8", title: "صحيات رقم 8 (شارع زين العابدين)", fridayOnly: false, zones: [] },
+        { id: "s9", title: "صحيات رقم 9 (مجمع السجاد)", fridayOnly: false, zones: [] },
+        { id: "s10", title: "صحيات رقم 10 (الرابطة)", fridayOnly: true, zones: [] },
+        { id: "s11", title: "صحيات رقم 11 (المدرسه الغروية)", fridayOnly: false, zones: [] },
+        { id: "s14", title: "صحيات رقم 14 (الخباطة)", fridayOnly: false, zones: [] },
+        { id: "fatima", title: "صحيات صحن السيدة فاطمة ع", fridayOnly: false, zones: [] },
+        { id: "farewell", title: "متنقلة التوديع", fridayOnly: false, zones: [] },
+        { id: "garage", title: "متنقلة گراج ابوتراب", fridayOnly: true, zones: [] },
+        { id: "murtada", title: "استراحة المرتضى", fridayOnly: true, zones: [] },
+        { id: "ridha", title: "صحيات مدينة الإمام الرضا عليه السلام", fridayOnly: false, zones: [] }
+      ];
+      const person = (id, name, rest, site, zoneId, note) => ({
+        id, name, rest, site, zone: zoneId || "", note: note || "", leave: false
+      });
+      const people = [
+        person("p1", "عبد الهادي صادق", "tue", "s4", "s4a"),
+        person("p2", "هاني عوده", "mon", "s4", "s4c"),
+        person("p3", "علي احمد", "thu", "s4", "s4b"),
+        person("p4", "محمد رضا", "tue", "s4", "s4d"),
+        person("p5", "ريسان عبد", "mon", "s4", "s4c", "أحواض الوضوء باب الامام الحسين(ع)"),
+        person("p6", "رضا عبد مسلم", "sat", "s5", "s5a"),
+        person("p7", "احمد عدنان", "mon", "s5", "s5c", "صحيات جامع الشيخ الانصاري"),
+        person("p8", "صاحب مهدي", "sat", "s5", "s5b"),
+        person("p9", "عباس جبار", "thu", "s5", "s5c"),
+        person("p10", "رسول عبد", "sun", "s5", "s5d"),
+        person("p11", "سجاد يحيى", "wed", "s7", "", "زيارة صباحية"),
+        person("p12", "عادل صادق", "wed", "s8"),
+        person("p13", "فارس ضياء", "wed", "s8"),
+        person("p14", "فلاح كامل", "sat", "s9"),
+        person("p15", "سيف علي", "thu", "s9"),
+        person("p16", "مصطفى محسن", "sun", "s10"),
+        person("p17", "كرار حيدر", "wed", "s10"),
+        person("p18", "هادي احمد", "tue", "s11"),
+        person("p19", "حسنين عبد الاله", "sat", "s11", "", "غسل عام مع تنظيف المراوح"),
+        person("p20", "حسين كاظم", "sun", "s14"),
+        person("p21", "حسين سالم", "sun", "fatima", "", "رقم 16 قرب المضيف.. المجمع الإداري وقاعة العد والفرز …زيارة صباحية"),
+        person("p22", "حيدر طه", "mon", "fatima", "", "رقم 18 قرب المنارة…زيارة صباحية"),
+        person("p23", "عباس حسين", "tue", "fatima", "", "160+ قاعة امنه وجعفر الطيار"),
+        person("p24", "حسن عبود", "sat", "fatima", "", "موقع الغسل"),
+        person("p25", "مرتضى صلاح", "mon", "farewell"),
+        person("p26", "باقر محمد", "thu", "garage", "", "استراحة الغدير ومتنزه المعلمين"),
+        person("p27", "علي رزاق", "sat", "murtada"),
+        person("p28", "محمد هلال", "sun", "ridha", "", "صحية رقم 6 …..الطابق الاول"),
+        person("p29", "هاتف رحيم", "wed", "ridha", "", "صحية رقم 6 …..الطابق الاول"),
+        person("p30", "مصطفى مشتاق", "mon", "ridha", "", "صحية رقم 6 …..الطابق الثاني"),
+        person("p31", "كمال كاظم", "tue", "ridha", "", "صحية رقم 3 …..الطابق الاول…صحيات الورش قرب دار ابو طالب"),
+        person("p32", "نبيل جاهل", "thu", "ridha", "", "صحية رقم 3 الطابق الثاني")
+      ];
+      return { sites, people, daily: {} };
+    }
+
+    let state = load();
+    let reportDirty = false;
+    let peopleQuery = "";
+    let armed = null;
+
+    function load() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(STORE_KEY) || "null");
+        if (saved && Array.isArray(saved.people) && Array.isArray(saved.sites)) {
+          saved.daily = saved.daily || {};
+          saved.sites.forEach((site) => { site.zones = site.zones || []; });
+          return saved;
+        }
+      } catch (err) { /* الخطة الأصلية */ }
+      return seed();
+    }
+    function save() { localStorage.setItem(STORE_KEY, JSON.stringify(state)); }
+    function todayISO() {
+      const d = new Date();
+      const z = (n) => String(n).padStart(2, "0");
+      return d.getFullYear() + "-" + z(d.getMonth() + 1) + "-" + z(d.getDate());
+    }
+    function weekdayId(dateISO) {
+      const parts = dateISO.split("-").map(Number);
+      return ["sun", "mon", "tue", "wed", "thu", "fri", "sat"][new Date(parts[0], parts[1] - 1, parts[2]).getDay()];
+    }
+    function esc(value) {
+      return String(value ?? "").replace(/[&<>"']/g, (ch) => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+      })[ch]);
+    }
+    function siteById(id) { return state.sites.find((s) => s.id === id); }
+    function personById(id) { return state.people.find((p) => p.id === id); }
+    function nextId(prefix, list) {
+      const nums = list.map((item) => Number(String(item.id).replace(/\D/g, "")) || 0);
+      return prefix + (Math.max(0, ...nums) + 1);
+    }
+    function dayOptions(selected) {
+      const head = `<option value=""${selected ? "" : " selected"}>بلا استراحة أسبوعية</option>`;
+      return head + DAYS.map((d) => `<option value="${d.id}"${d.id === selected ? " selected" : ""}>${d.name}</option>`).join("");
+    }
+    function siteOptions(selected, openOnlyDay) {
+      const sites = state.sites.filter((s) => !openOnlyDay || !s.fridayOnly || openOnlyDay === "fri");
+      return `<option value="">بانتظار موقع</option>` + sites.map((s) =>
+        `<option value="${esc(s.id)}"${s.id === selected ? " selected" : ""}>${esc(s.title)}</option>`
+      ).join("");
+    }
+    function zoneOptions(siteId, selected) {
+      const zones = (siteById(siteId) || {}).zones || [];
+      return `<option value="">بدون تفصيلة</option>` + zones.map((z) =>
+        `<option value="${esc(z.id)}"${z.id === selected ? " selected" : ""}>${esc(z.label)}</option>`
+      ).join("");
+    }
+    function classify(dateISO) {
+      const day = weekdayId(dateISO);
+      const openSites = state.sites.filter((s) => !s.fridayOnly || day === "fri");
+      const openIds = new Set(openSites.map((s) => s.id));
+      const bySite = new Map(openSites.map((s) => [s.id, []]));
+      const rest = [];
+      const leave = [];
+      const waiting = [];
+      state.people.forEach((person) => {
+        if (person.leave) { leave.push(person); return; }
+        if (person.rest === day) { rest.push(person); return; }
+        const override = state.daily[dateISO] && state.daily[dateISO][person.id];
+        const siteId = override ? override.siteId : person.site;
+        const zoneId = override ? override.zoneId : person.zone;
+        if (!siteId || !openIds.has(siteId)) { waiting.push(person); return; }
+        bySite.get(siteId).push({ person, zoneId: zoneId || "" });
+      });
+      return { day, openSites, bySite, rest, leave, waiting };
+    }
+    function buildReport(dateISO) {
+      const view = classify(dateISO);
+      const lines = [
+        "*بسم الله الرحمن الرحيم*",
+        "*خطه عمل خدام الوحده الصباحية شعبة المنشآت الصحية*",
+        "*... يوم " + DAY_NAME[view.day] + " " + dateISO.split("-").join("/") + " ...*",
+        ""
+      ];
+      view.openSites.forEach((site) => {
+        const rows = view.bySite.get(site.id) || [];
+        if (!rows.length) return;
+        lines.push("*" + site.title + "*");
+        rows.forEach((row, index) => {
+          lines.push((index + 1) + "-" + row.person.name + (row.person.note ? " … " + row.person.note : ""));
+        });
+        lines.push("");
+      });
+      if (view.waiting.length) {
+        lines.push("*بانتظار تحديد موقع*");
+        view.waiting.forEach((person, index) => lines.push((index + 1) + "-" + person.name));
+        lines.push("");
+      }
+      const detailed = view.openSites.filter((site) => site.zones.length && (view.bySite.get(site.id) || []).some((row) => row.zoneId));
+      if (detailed.length) {
+        lines.push("*خطه توزيع المهام على المنتسبين*");
+        lines.push("");
+        detailed.forEach((site) => {
+          lines.push("*" + site.title + "*");
+          const rows = view.bySite.get(site.id) || [];
+          site.zones.forEach((zone) => {
+            const names = rows.filter((row) => row.zoneId === zone.id).map((row) => row.person.name);
+            if (!names.length) return;
+            lines.push("*" + zone.label + "*");
+            lines.push(names.join(" + "));
+          });
+          lines.push("");
+        });
+      }
+      return lines.join("\n").trim() + "\n";
+    }
+
+    function setReport(text, dirty, note) {
+      document.getElementById("report").value = text;
+      reportDirty = dirty;
+      const box = document.getElementById("report-note");
+      box.hidden = !note;
+      box.textContent = note || "";
+    }
+    function placeMark() {
+      const nav = document.getElementById("nav");
+      const current = nav.querySelector("button[aria-selected='true']");
+      const mark = document.getElementById("nav-mark");
+      if (!current) return;
+      const left = current.getBoundingClientRect().left - nav.getBoundingClientRect().left;
+      mark.style.width = current.getBoundingClientRect().width + "px";
+      mark.style.transform = "translateX(" + left + "px)";
+    }
+    function showTab(name) {
+      document.querySelectorAll(".nav button").forEach((tab) => {
+        tab.setAttribute("aria-selected", String(tab.dataset.tab === name));
+      });
+      ["plan", "people", "sites"].forEach((id) => {
+        document.getElementById("panel-" + id).classList.toggle("on", id === name);
+      });
+      placeMark();
+    }
+    function paintBoard() {
+      const dateISO = document.getElementById("work-date").value;
+      const view = classify(dateISO);
+      document.getElementById("day-label").textContent = DAY_NAME[view.day] + "   " + dateISO.split("-").join("/");
+      const working = [...view.bySite.values()].reduce((sum, rows) => sum + rows.length, 0);
+      document.getElementById("stats").innerHTML = [
+        ["في الدوام", working],
+        ["استراحة", view.rest.length],
+        ["إجازة", view.leave.length],
+        ["بانتظار", view.waiting.length]
+      ].map(([label, count]) => `<span>${label} <b>${count}</b></span>`).join("");
+      const blocks = [];
+      const post = (title, body) => `<section class="post"><h2>${title}</h2>${body}</section>`;
+      view.openSites.forEach((site) => {
+        const rows = view.bySite.get(site.id) || [];
+        if (!rows.length) return;
+        const items = rows.map((row, index) => `<li>
+          <span class="idx">${index + 1}</span>
+          <div><strong>${esc(row.person.name)}</strong>${row.person.note ? `<div class="note">${esc(row.person.note)}</div>` : ""}</div>
+          <select data-move="${esc(row.person.id)}" aria-label="نقل ${esc(row.person.name)}">${siteOptions(site.id, view.day)}</select>
+        </li>`).join("");
+        const tag = site.fridayOnly ? `<span class="tag">جمعة فقط</span>` : `<span class="count">${rows.length}</span>`;
+        blocks.push(post(esc(site.title) + " " + tag, `<ol class="names">${items}</ol>`));
+      });
+      if (view.waiting.length) {
+        const items = view.waiting.map((person) => `<li>
+          <span class="idx">–</span>
+          <strong>${esc(person.name)}</strong>
+          <select data-move="${esc(person.id)}" aria-label="تعيين ${esc(person.name)}">${siteOptions("", view.day)}</select>
+        </li>`).join("");
+        blocks.push(post("بانتظار تحديد موقع <span class=\"count\">" + view.waiting.length + "</span>", `<p class="hint">موقعهم مغلق اليوم، أو لم يُحدد.</p><ul class="names">${items}</ul>`));
+      }
+      if (view.rest.length) {
+        blocks.push(post("استراحة هذا اليوم <span class=\"count\">" + view.rest.length + "</span>", `<p class="hint">لا يدخلون التوزيع.</p><ul class="plain">${view.rest.map((p) => `<li>${esc(p.name)}</li>`).join("")}</ul>`));
+      }
+      if (view.leave.length) {
+        blocks.push(post("مجازون <span class=\"count\">" + view.leave.length + "</span>", `<ul class="plain">${view.leave.map((p) => `<li>${esc(p.name)}</li>`).join("")}</ul>`));
+      }
+      document.getElementById("board").innerHTML = blocks.join("") || `<p class="hint">لا يوجد منتسبون في هذا اليوم.</p>`;
+      if (!reportDirty) setReport(buildReport(dateISO), false, "");
+    }
+    function paintPeople() {
+      armed = null;
+      const rows = state.people.filter((p) => !peopleQuery.trim() || p.name.includes(peopleQuery.trim())).map((person) => `
+        <form class="person" data-person="${esc(person.id)}">
+          <label>الاسم<input name="name" value="${esc(person.name)}" required autocomplete="off"></label>
+          <label class="check"><input name="leave" type="checkbox"${person.leave ? " checked" : ""}> مجاز</label>
+          <button type="button" class="danger" data-delete-person="${esc(person.id)}">حذف</button>
+          <div class="span4">
+            <label>الاستراحة<select name="rest">${dayOptions(person.rest)}</select></label>
+            <label>الموقع<select name="site">${siteOptions(person.site)}</select></label>
+            <label>التفصيلة<select name="zone">${zoneOptions(person.site, person.zone)}</select></label>
+            <label>ملاحظة التقرير<input name="note" value="${esc(person.note)}" autocomplete="off"></label>
+          </div>
+        </form>`).join("");
+      document.getElementById("people-list").innerHTML = rows || `<p class="hint">لا توجد نتيجة بهذا الاسم.</p>`;
+      const addRest = document.querySelector("#add-person select[name=rest]");
+      const addSite = document.querySelector("#add-person select[name=site]");
+      const keepSite = addSite.value;
+      if (!addRest.options.length) addRest.innerHTML = dayOptions("");
+      addSite.innerHTML = siteOptions(keepSite);
+    }
+    function paintSites() {
+      document.getElementById("sites-list").innerHTML = state.sites.map((site) => {
+        const zones = (site.zones || []).map((zone) => `
+          <div class="zone-line">
+            <input data-zone-label="${esc(site.id)}" data-zone="${esc(zone.id)}" value="${esc(zone.label)}" aria-label="اسم التفصيلة">
+            <button type="button" class="danger" data-delete-zone="${esc(site.id)}" data-zone="${esc(zone.id)}">حذف</button>
+          </div>`).join("");
+        return `<form class="site-edit" data-site="${esc(site.id)}">
+          <div class="site-row">
+            <label>اسم الموقع<input name="title" value="${esc(site.title)}" required></label>
+            <label class="check"><input name="fridayOnly" type="checkbox"${site.fridayOnly ? " checked" : ""}> جمعة فقط</label>
+          </div>
+          <div class="zones">${zones}<button type="button" class="texty" data-add-zone="${esc(site.id)}">إضافة تفصيلة داخل الموقع</button></div>
+          <button type="button" class="danger" data-delete-site="${esc(site.id)}">حذف الموقع</button>
+        </form>`;
+      }).join("");
+    }
+    function refreshEditors() { paintPeople(); paintSites(); paintBoard(); }
+    function commitPeopleForm(form) {
+      const person = personById(form.dataset.person);
+      if (!person) return;
+      const name = form.name.value.trim();
+      if (!name) { form.name.value = person.name; return; }
+      person.name = name;
+      person.rest = form.rest.value;
+      person.leave = form.leave.checked;
+      person.site = form.site.value;
+      const zones = (siteById(person.site) || {}).zones || [];
+      person.zone = zones.some((z) => z.id === form.zone.value) ? form.zone.value : "";
+      person.note = form.note.value.trim();
+      save();
+      paintBoard();
+    }
+    function wantsConfirm(button, key, label) {
+      if (armed && armed.button === button) { armed = null; return true; }
+      if (armed) armed.button.textContent = armed.label;
+      armed = { button, label };
+      button.textContent = label;
+      return false;
+    }
+
+    const dateInput = document.getElementById("work-date");
+    dateInput.value = todayISO();
+    dateInput.addEventListener("change", () => {
+      if (!dateInput.value) dateInput.value = todayISO();
+      if (reportDirty) {
+        document.getElementById("report-note").hidden = false;
+        document.getElementById("report-note").textContent = "تغيّر اليوم والتوزيع، والنص ما زال تعديلك. «إعادة البناء» يكتبه من جديد.";
+      }
+      paintBoard();
+    });
+    document.getElementById("nav").addEventListener("click", (event) => {
+      const button = event.target.closest("button");
+      if (button) showTab(button.dataset.tab);
+    });
+    document.getElementById("nav").addEventListener("keydown", (event) => {
+      const buttons = [...document.querySelectorAll("#nav button")];
+      const index = buttons.indexOf(document.activeElement);
+      if (index < 0) return;
+      if (event.key === "ArrowLeft") { buttons[(index + 1) % buttons.length].focus(); event.preventDefault(); }
+      if (event.key === "ArrowRight") { buttons[(index - 1 + buttons.length) % buttons.length].focus(); event.preventDefault(); }
+    });
+    window.addEventListener("resize", placeMark);
+    document.fonts.ready.then(placeMark);
+
+    document.getElementById("board").addEventListener("change", (event) => {
+      const select = event.target.closest("select[data-move]");
+      if (!select) return;
+      const dateISO = dateInput.value;
+      const person = personById(select.dataset.move);
+      state.daily[dateISO] = state.daily[dateISO] || {};
+      if (!select.value) state.daily[dateISO][person.id] = { siteId: "", zoneId: "" };
+      else {
+        const site = siteById(select.value);
+        const zoneOk = site && site.zones.some((z) => z.id === person.zone);
+        state.daily[dateISO][person.id] = { siteId: select.value, zoneId: zoneOk ? person.zone : "" };
+      }
+      save();
+      paintBoard();
+    });
+    document.getElementById("report").addEventListener("input", () => {
+      reportDirty = true;
+      const box = document.getElementById("report-note");
+      box.hidden = false;
+      box.textContent = "هذا النص معدّل بيدك. «إعادة البناء» تستبدله بالتوزيع الظاهر.";
+    });
+    document.getElementById("rebuild-report").addEventListener("click", () => {
+      setReport(buildReport(dateInput.value), false, "");
+      document.getElementById("copy-msg").textContent = "أُعيد بناء التقرير من توزيع هذا اليوم.";
+    });
+    document.getElementById("copy-report").addEventListener("click", async () => {
+      const button = document.getElementById("copy-report");
+      const msg = document.getElementById("copy-msg");
+      const text = document.getElementById("report").value;
+      try {
+        await navigator.clipboard.writeText(text);
+        button.classList.add("is-done");
+        button.textContent = "تم النسخ";
+        msg.textContent = "الصق النص في مجموعة الواتساب.";
+        setTimeout(() => { button.classList.remove("is-done"); button.textContent = "نسخ التقرير"; }, 1600);
+      } catch (err) {
+        document.getElementById("report").focus();
+        document.getElementById("report").select();
+        msg.textContent = "النسخ التلقائي توقف. النص محدد، اضغط Ctrl+C.";
+      }
+    });
+
+    document.getElementById("people-filter").addEventListener("input", (event) => {
+      peopleQuery = event.target.value;
+      const start = event.target.selectionStart;
+      paintPeople();
+      const filter = document.getElementById("people-filter");
+      filter.value = peopleQuery;
+      filter.focus();
+      filter.setSelectionRange(start, start);
+    });
+    document.getElementById("add-person").addEventListener("submit", (event) => {
+      event.preventDefault();
+      const form = event.target;
+      const error = document.getElementById("add-error");
+      const name = form.name.value.trim();
+      if (!name) { error.hidden = false; error.textContent = "اكتب اسم المنتسب أولاً."; form.name.focus(); return; }
+      error.hidden = true;
+      state.people.push({ id: nextId("p", state.people), name, rest: form.rest.value, site: form.site.value, zone: "", note: "", leave: false });
+      form.reset();
+      form.querySelector("select[name=rest]").innerHTML = dayOptions("");
+      save();
+      refreshEditors();
+    });
+    document.getElementById("people-list").addEventListener("change", (event) => {
+      const form = event.target.closest("form[data-person]");
+      if (!form) return;
+      commitPeopleForm(form);
+      if (event.target.name === "site") form.zone.innerHTML = zoneOptions(form.site.value, personById(form.dataset.person).zone);
+    });
+    document.getElementById("people-list").addEventListener("focusout", (event) => {
+      const form = event.target.closest("form[data-person]");
+      if (form && (event.target.name === "name" || event.target.name === "note")) commitPeopleForm(form);
+    });
+    document.getElementById("people-list").addEventListener("click", (event) => {
+      const button = event.target.closest("[data-delete-person]");
+      if (!button || !wantsConfirm(button, button.dataset.deletePerson, "تأكيد الحذف")) return;
+      state.people = state.people.filter((item) => item.id !== button.dataset.deletePerson);
+      save();
+      refreshEditors();
+    });
+    document.getElementById("reset-data").addEventListener("click", (event) => {
+      if (!wantsConfirm(event.currentTarget, "reset", "تأكيد الإرجاع")) return;
+      state = seed();
+      reportDirty = false;
+      peopleQuery = "";
+      document.getElementById("people-filter").value = "";
+      save();
+      refreshEditors();
+      document.getElementById("copy-msg").textContent = "رجعت الخطة الأصلية.";
+    });
+
+    document.getElementById("add-site").addEventListener("submit", (event) => {
+      event.preventDefault();
+      const form = event.target;
+      const error = document.getElementById("site-error");
+      const title = form.title.value.trim();
+      if (!title) { error.hidden = false; error.textContent = "اكتب اسم الموقع أولاً."; return; }
+      error.hidden = true;
+      state.sites.push({ id: nextId("s", state.sites), title, fridayOnly: form.fridayOnly.checked, zones: [] });
+      form.reset();
+      save();
+      refreshEditors();
+    });
+    document.getElementById("sites-list").addEventListener("change", (event) => {
+      const form = event.target.closest("form[data-site]");
+      if (!form) return;
+      const site = siteById(form.dataset.site);
+      if (event.target.name === "title") site.title = form.title.value.trim() || site.title;
+      if (event.target.name === "fridayOnly") site.fridayOnly = form.fridayOnly.checked;
+      save();
+      paintBoard();
+    });
+    document.getElementById("sites-list").addEventListener("focusout", (event) => {
+      const input = event.target.closest("[data-zone-label]");
+      if (!input) return;
+      const site = siteById(input.dataset.zoneLabel);
+      const zone = site && site.zones.find((item) => item.id === input.dataset.zone);
+      if (!zone) return;
+      zone.label = input.value.trim() || zone.label;
+      input.value = zone.label;
+      save();
+      paintBoard();
+    });
+    document.getElementById("sites-list").addEventListener("click", (event) => {
+      const add = event.target.closest("[data-add-zone]");
+      if (add) {
+        const site = siteById(add.dataset.addZone);
+        site.zones.push({ id: nextId(site.id + "z", site.zones), label: "تفصيلة جديدة" });
+        save();
+        refreshEditors();
+        return;
+      }
+      const zoneButton = event.target.closest("[data-delete-zone]");
+      if (zoneButton) {
+        if (!wantsConfirm(zoneButton, "z" + zoneButton.dataset.zone, "تأكيد الحذف")) return;
+        const site = siteById(zoneButton.dataset.deleteZone);
+        site.zones = site.zones.filter((zone) => zone.id !== zoneButton.dataset.zone);
+        state.people.forEach((person) => { if (person.zone === zoneButton.dataset.zone) person.zone = ""; });
+        save();
+        refreshEditors();
+        return;
+      }
+      const siteButton = event.target.closest("[data-delete-site]");
+      if (!siteButton || !wantsConfirm(siteButton, "s" + siteButton.dataset.deleteSite, "تأكيد الحذف")) return;
+      const site = siteById(siteButton.dataset.deleteSite);
+      state.sites = state.sites.filter((item) => item.id !== site.id);
+      state.people.forEach((person) => { if (person.site === site.id) { person.site = ""; person.zone = ""; } });
+      save();
+      refreshEditors();
+    });
+    document.addEventListener("click", (event) => {
+      if (!armed || event.target === armed.button) return;
+      armed.button.textContent = armed.button.dataset.deletePerson || armed.button.dataset.deleteSite || armed.button.dataset.deleteZone ? "حذف" : "إرجاع الخطة الأصلية";
+      if (armed.button.id === "reset-data") armed.button.textContent = "إرجاع الخطة الأصلية";
+      else armed.button.textContent = "حذف";
+      armed = null;
+    });
+
+    refreshEditors();
+    placeMark();
+    window.__khadam = { classify, buildReport, weekdayId, seed };
+  </script>
+</body>
+</html>
