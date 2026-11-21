@@ -323,11 +323,14 @@
       <section id="panel-plan" class="panel on">
         <div class="work">
           <div>
-            <p class="hint">انقل المنتسب لموقع هذا اليوم فقط. توزيع كل يوم مستقل، ولا يغيّر موقع الأيام الأخرى. الاستراحة والإجازة خارج التوزيع.</p>
+            <p class="hint">كل يوم يعيد بناء التوزيع لمن يعمل فيه. مواقع الجمعة تُفتح وحدها يوم الجمعة. النقل يخص هذا التاريخ فقط.</p>
             <div class="toolbar">
+              <button type="button" class="ghost" id="prev-day" aria-label="اليوم السابق">اليوم السابق</button>
+              <button type="button" class="ghost" id="next-day" aria-label="اليوم التالي">اليوم التالي</button>
               <input class="search-box" id="board-filter" type="search" placeholder="بحث بالاسم في التوزيع" autocomplete="off">
               <button type="button" class="ghost" id="reset-seed">خطة الجمعة الأصلية</button>
             </div>
+            <p id="day-banner" class="warn" hidden></p>
             <div id="board"></div>
           </div>
           <section class="sheet">
@@ -625,6 +628,43 @@
       const q = query.trim();
       return !q || name.includes(q);
     }
+    function shiftDate(iso, days) {
+      const parts = iso.split("-").map(Number);
+      const dt = new Date(parts[0], parts[1] - 1, parts[2]);
+      dt.setDate(dt.getDate() + days);
+      const z = (n) => String(n).padStart(2, "0");
+      return dt.getFullYear() + "-" + z(dt.getMonth() + 1) + "-" + z(dt.getDate());
+    }
+    function paintDayBanner(view) {
+      const banner = document.getElementById("day-banner");
+      const fridaySites = view.openSites.filter((site) => site.fridayOnly).map((site) => site.title);
+      const bits = [];
+      bits.push("عرض " + DAY_NAME[view.day] + " فقط.");
+      if (view.rest.length) bits.push("خارج الدوام للاستراحة: " + view.rest.map((p) => p.name).join("، ") + ".");
+      if (view.leave.length) bits.push("مجازون: " + view.leave.map((p) => p.name).join("، ") + ".");
+      if (view.day === "fri") {
+        bits.push(fridaySites.length
+          ? "مواقع الجمعة فُتحت تلقائياً: " + fridaySites.join("، ") + "."
+          : "لا توجد مواقع معلّمة بجمعة فقط.");
+      } else {
+        bits.push("مواقع الجمعة مغلقة اليوم؛ منتسبوها يظهرون في بانتظار موقع حتى الجمعة.");
+      }
+      banner.hidden = false;
+      banner.textContent = bits.join(" ");
+    }
+    function applyDate(dateISO, opts) {
+      const options = opts || {};
+      if (!dateISO) dateISO = todayISO();
+      dateInput.value = dateISO;
+      boardQuery = "";
+      document.getElementById("board-filter").value = "";
+      if (options.rebuildReport !== false) {
+        reportDirty = false;
+        setReport(buildReport(dateISO), false, "");
+      }
+      paintBoard();
+      document.getElementById("copy-msg").textContent = options.message || ("توزيع " + DAY_NAME[weekdayId(dateISO)] + " جاهز.");
+    }
     function paintBoard() {
       const dateISO = document.getElementById("work-date").value;
       const view = classify(dateISO);
@@ -636,6 +676,7 @@
         ["إجازة", view.leave.length],
         ["بانتظار", view.waiting.length]
       ].map(([label, count]) => `<span>${label} <b>${count}</b></span>`).join("");
+      paintDayBanner(view);
 
       const post = (title, body) => `<section class="post"><h2>${title}</h2>${body}</section>`;
       const personRow = (person, index, selectedSite) => `
@@ -776,11 +817,19 @@
     const dateInput = document.getElementById("work-date");
     dateInput.value = todayISO();
     dateInput.addEventListener("change", () => {
-      if (!dateInput.value) dateInput.value = todayISO();
-      if (reportDirty) {
-        setReport(document.getElementById("report").value, true, "تغيّر اليوم والتوزيع، والنص ما زال تعديلك. «إعادة البناء» يكتبه من جديد.");
-      }
-      paintBoard();
+      applyDate(dateInput.value || todayISO(), {
+        message: "تغيّر اليوم: المنتسبون حسب الاستراحة، ومواقع الجمعة تُفتح تلقائياً يوم الجمعة فقط."
+      });
+    });
+    document.getElementById("prev-day").addEventListener("click", () => {
+      applyDate(shiftDate(dateInput.value || todayISO(), -1), {
+        message: "انتقلت لليوم السابق؛ التوزيع والمنتسبون تغيّرا لهذا اليوم."
+      });
+    });
+    document.getElementById("next-day").addEventListener("click", () => {
+      applyDate(shiftDate(dateInput.value || todayISO(), 1), {
+        message: "انتقلت لليوم التالي؛ التوزيع والمنتسبون تغيّرا لهذا اليوم."
+      });
     });
 
     document.getElementById("nav").addEventListener("click", (event) => {
