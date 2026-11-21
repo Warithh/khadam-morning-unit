@@ -323,7 +323,7 @@
       <section id="panel-plan" class="panel on">
         <div class="work">
           <div>
-            <p class="hint">انقل المنتسب إلى موقعه من القائمة بجانب اسمه. من كان في استراحة أو إجازة لا يدخل التوزيع.</p>
+            <p class="hint">انقل المنتسب لموقع هذا اليوم فقط. توزيع كل يوم مستقل، ولا يغيّر موقع الأيام الأخرى. الاستراحة والإجازة خارج التوزيع.</p>
             <div class="toolbar">
               <input class="search-box" id="board-filter" type="search" placeholder="بحث بالاسم في التوزيع" autocomplete="off">
               <button type="button" class="ghost" id="reset-seed">خطة الجمعة الأصلية</button>
@@ -390,7 +390,7 @@
       { id: "fri", name: "الجمعة" }
     ];
     const DAY_NAME = Object.fromEntries(DAYS.map((d) => [d.id, d.name]));
-    const STORE_KEY = "khadam-morning-unit-v2";
+    const STORE_KEY = "khadam-morning-unit-v3";
 
     function seed() {
       const zone = (id, label) => ({ id, label });
@@ -456,7 +456,7 @@
         person("p31", "كمال كاظم", "tue", "ridha", "", "صحية رقم 3 …..الطابق الاول…صحيات الورش قرب دار ابو طالب"),
         person("p32", "نبيل جاهل", "thu", "ridha", "", "صحية رقم 3 الطابق الثاني")
       ];
-      return { sites, people };
+      return { sites, people, daily: {} };
     }
 
     let state = load();
@@ -469,6 +469,7 @@
       try {
         const saved = JSON.parse(localStorage.getItem(STORE_KEY) || "null");
         if (saved && Array.isArray(saved.people) && Array.isArray(saved.sites)) {
+          saved.daily = saved.daily && typeof saved.daily === "object" ? saved.daily : {};
           saved.sites.forEach((site) => { site.zones = site.zones || []; });
           saved.people.forEach((person) => {
             person.zone = person.zone || "";
@@ -525,6 +526,16 @@
         return true;
       });
     }
+    function assignmentFor(dateISO, person) {
+      const override = state.daily[dateISO] && state.daily[dateISO][person.id];
+      if (override) {
+        return {
+          siteId: override.siteId || "",
+          zoneId: override.zoneId || ""
+        };
+      }
+      return { siteId: person.site || "", zoneId: person.zone || "" };
+    }
     function classify(dateISO) {
       const day = weekdayId(dateISO);
       const openSites = state.sites.filter((s) => !s.fridayOnly || day === "fri");
@@ -536,9 +547,9 @@
       uniquePeople(state.people).forEach((person) => {
         if (person.leave) { leave.push(person); return; }
         if (person.rest === day) { rest.push(person); return; }
-        const siteId = person.site;
+        const { siteId, zoneId } = assignmentFor(dateISO, person);
         if (!siteId || !openIds.has(siteId)) { waiting.push(person); return; }
-        bySite.get(siteId).push(person);
+        bySite.get(siteId).push({ person, zoneId });
       });
       return { day, openSites, bySite, rest, leave, waiting };
     }
@@ -551,11 +562,11 @@
         ""
       ];
       view.openSites.forEach((site) => {
-        const people = view.bySite.get(site.id) || [];
-        if (!people.length) return;
+        const rows = view.bySite.get(site.id) || [];
+        if (!rows.length) return;
         lines.push("*" + site.title + "*");
-        people.forEach((person, index) => {
-          lines.push((index + 1) + "-" + person.name + (person.note ? " … " + person.note : ""));
+        rows.forEach((row, index) => {
+          lines.push((index + 1) + "-" + row.person.name + (row.person.note ? " … " + row.person.note : ""));
         });
         lines.push("");
       });
@@ -566,16 +577,16 @@
       }
       const detailed = view.openSites.filter((site) => {
         if (!site.zones.length) return false;
-        return (view.bySite.get(site.id) || []).some((person) => person.zone);
+        return (view.bySite.get(site.id) || []).some((row) => row.zoneId);
       });
       if (detailed.length) {
         lines.push("*خطه توزيع المهام على المنتسبين*");
         lines.push("");
         detailed.forEach((site) => {
           lines.push("*" + site.title + "*");
-          const people = view.bySite.get(site.id) || [];
+          const rows = view.bySite.get(site.id) || [];
           site.zones.forEach((zone) => {
-            const names = people.filter((person) => person.zone === zone.id).map((person) => person.name);
+            const names = rows.filter((row) => row.zoneId === zone.id).map((row) => row.person.name);
             if (!names.length) return;
             lines.push("*" + zone.label + "*");
             lines.push(names.join(" + "));
@@ -634,21 +645,21 @@
             <strong>${esc(person.name)}</strong>
             ${person.note ? `<div class="note">${esc(person.note)}</div>` : ""}
           </div>
-          <select data-move="${esc(person.id)}" aria-label="نقل ${esc(person.name)}">${siteOptions(selectedSite, view.day)}</select>
+          <select data-move="${esc(person.id)}" aria-label="نقل ${esc(person.name)} لهذا اليوم">${siteOptions(selectedSite, view.day)}</select>
         </li>`;
 
       const blocks = [];
       let shown = 0;
       view.openSites.forEach((site) => {
-        const people = (view.bySite.get(site.id) || []).filter((person) => matchesQuery(person.name, boardQuery));
-        if (!people.length) return;
-        shown += people.length;
+        const rows = (view.bySite.get(site.id) || []).filter((row) => matchesQuery(row.person.name, boardQuery));
+        if (!rows.length) return;
+        shown += rows.length;
         const tag = site.fridayOnly
           ? `<span class="tag">جمعة فقط</span>`
-          : `<span class="count">${people.length}</span>`;
+          : `<span class="count">${rows.length}</span>`;
         blocks.push(post(
           esc(site.title) + " " + tag,
-          `<ol class="names">${people.map((person, index) => personRow(person, index, site.id)).join("")}</ol>`
+          `<ol class="names">${rows.map((row, index) => personRow(row.person, index, site.id)).join("")}</ol>`
         ));
       });
 
@@ -657,7 +668,7 @@
         shown += waiting.length;
         blocks.push(post(
           "بانتظار تحديد موقع <span class=\"count\">" + waiting.length + "</span>",
-          `<p class="hint">عيّن الموقع من القائمة، أو انتظر فتح مواقع الجمعة.</p><ol class="names">${waiting.map((person, index) => personRow(person, index, "")).join("")}</ol>`
+          `<p class="hint">عيّن الموقع من القائمة لهذا اليوم فقط، أو انتظر فتح مواقع الجمعة.</p><ol class="names">${waiting.map((person, index) => personRow(person, index, "")).join("")}</ol>`
         ));
       }
 
@@ -795,11 +806,20 @@
       if (!select) return;
       const person = personById(select.dataset.move);
       if (!person) return;
+      const dateISO = dateInput.value;
       const nextSite = select.value;
       const site = siteById(nextSite);
       const zoneStillValid = site && site.zones.some((zone) => zone.id === person.zone);
-      person.site = nextSite;
-      if (!zoneStillValid) person.zone = "";
+      state.daily[dateISO] = state.daily[dateISO] || {};
+      if (nextSite === (person.site || "") && zoneStillValid) {
+        delete state.daily[dateISO][person.id];
+        if (!Object.keys(state.daily[dateISO]).length) delete state.daily[dateISO];
+      } else {
+        state.daily[dateISO][person.id] = {
+          siteId: nextSite,
+          zoneId: zoneStillValid ? person.zone : ""
+        };
+      }
       save();
       paintBoard();
     });
@@ -969,7 +989,20 @@
 
     refreshAll();
     placeMark();
-    window.__khadam = { classify, buildReport, weekdayId, seed, STORE_KEY };
+    window.__khadam = {
+      classify,
+      buildReport,
+      weekdayId,
+      seed,
+      assignmentFor,
+      STORE_KEY,
+      getState: () => state,
+      setDaily(dateISO, personId, siteId, zoneId) {
+        state.daily[dateISO] = state.daily[dateISO] || {};
+        state.daily[dateISO][personId] = { siteId, zoneId: zoneId || "" };
+        save();
+      }
+    };
   </script>
 </body>
 </html>
