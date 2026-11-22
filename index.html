@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#0f2f28">
+  <meta name="theme-color" content="#0c2a24">
   <title>خطة خدام الوحدة الصباحية</title>
   <meta name="description" content="توزيع واجبات خدام الوحدة الصباحية مع تقرير واتساب.">
   <style>
@@ -15,281 +15,532 @@
       font-display: swap;
     }
     :root {
-      --bg: #f2f5f3;
-      --ink: #10231d;
-      --muted: #4d635a;
-      --line: #d5ddd8;
+      --bg: #eef2f0;
+      --bg-soft: #f7f9f8;
+      --ink: #0e1f1a;
+      --muted: #5a6f66;
+      --line: #d0dbd5;
+      --line-strong: #b7c6bf;
       --panel: #ffffff;
-      --brand: #0f2f28;
-      --brand-2: #1a6b52;
+      --brand: #0c2a24;
+      --brand-mid: #145043;
+      --brand-soft: #e4f0eb;
+      --accent: #1a6b52;
       --danger: #9b2c2c;
-      --focus: #1a6b52;
-      --shadow: 0 1px 0 rgba(16, 35, 29, .04), 0 18px 40px rgba(16, 35, 29, .06);
-      --radius: 14px;
-      --ease: cubic-bezier(.2, .8, .2, 1);
+      --danger-soft: #f8ecec;
+      --shadow: 0 1px 2px rgba(14, 31, 26, .04), 0 12px 28px rgba(14, 31, 26, .06);
+      --radius: 16px;
+      --radius-sm: 10px;
+      --space: 8px;
+      --ease: cubic-bezier(.22, .8, .24, 1);
+      --tap: 44px;
     }
     * { box-sizing: border-box; }
     html { height: 100%; }
     body {
       margin: 0;
       min-height: 100%;
-      background:
-        radial-gradient(1200px 480px at 100% -10%, rgba(26, 107, 82, .08), transparent 55%),
-        var(--bg);
       color: var(--ink);
       font-family: "Mada", "Segoe UI", Tahoma, sans-serif;
       font-size: 16px;
       line-height: 1.5;
       font-variant-numeric: tabular-nums;
+      background:
+        linear-gradient(180deg, #dfeae4 0%, transparent 220px),
+        radial-gradient(900px 360px at 100% 0%, rgba(26, 107, 82, .09), transparent 60%),
+        var(--bg);
     }
-    ::selection { background: #c6e2d6; color: var(--ink); }
-    :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+    ::selection { background: #c7e4d7; color: var(--ink); }
+    :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
     button, input, select, textarea { font: inherit; color: inherit; }
     button { cursor: pointer; }
-    h1, h2, p { margin: 0; }
-    .app { width: min(1180px, calc(100% - 28px)); margin-inline: auto; padding-bottom: 64px; }
-    .hero {
+    h1, h2, h3, p { margin: 0; }
+    .app {
+      width: min(1120px, calc(100% - 32px));
+      margin-inline: auto;
+      padding: 24px 0 72px;
+    }
+
+    /* Header */
+    .topbar {
       display: flex;
+      align-items: flex-end;
       justify-content: space-between;
-      gap: 18px;
-      align-items: end;
-      padding: 28px 0 18px;
+      gap: 20px;
       flex-wrap: wrap;
+      margin-bottom: 20px;
     }
-    .hero h1 {
-      font-size: clamp(1.55rem, 2.4vw, 2rem);
-      font-weight: 700;
-      letter-spacing: -0.03em;
-      line-height: 1.15;
+    .brand { min-width: min(100%, 280px); }
+    .brand h1 {
+      font-size: clamp(1.7rem, 3vw, 2.15rem);
+      font-weight: 800;
+      letter-spacing: -0.035em;
+      line-height: 1.1;
+      color: var(--brand);
     }
-    .hero .sub { margin-top: 6px; color: var(--muted); font-size: .98rem; }
-    .datebox {
-      display: grid;
-      gap: 8px;
+    .brand p {
+      margin-top: 6px;
       color: var(--muted);
-      font-size: .82rem;
+      font-size: .95rem;
+      font-weight: 500;
+    }
+    .date-control {
+      display: grid;
+      gap: 6px;
+      justify-items: stretch;
+    }
+    .date-control > span {
+      color: var(--muted);
+      font-size: .78rem;
+      font-weight: 700;
+      letter-spacing: .02em;
+    }
+    .date-nav {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 4px;
+      box-shadow: var(--shadow);
+    }
+    .date-nav input[type="date"] {
+      border: 0;
+      background: transparent;
+      min-height: var(--tap);
+      padding: 0 10px;
+      min-width: 150px;
+    }
+    .icon-btn {
+      width: var(--tap);
+      height: var(--tap);
+      border: 0;
+      border-radius: 11px;
+      background: transparent;
+      color: var(--ink);
+      font-size: 1.2rem;
+      line-height: 1;
+      transition: background .15s var(--ease);
+    }
+    .icon-btn:hover { background: var(--bg-soft); }
+
+    /* Day strip */
+    .daystrip {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+    .day-title {
+      font-size: 1.35rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+    .metrics {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .metric {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 6px;
+      min-height: 36px;
+      padding: 0 12px;
+      border-radius: 999px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      color: var(--muted);
+      font-size: .86rem;
       font-weight: 600;
     }
-    .date-row { display: flex; gap: 8px; align-items: center; }
-    input, select, textarea {
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      min-height: 44px;
-      padding: 10px 12px;
-      min-width: 0;
-      max-width: 100%;
+    .metric b {
+      color: var(--ink);
+      font-size: .98rem;
+      font-weight: 800;
     }
-    select { width: 100%; }
-    textarea {
-      width: 100%;
-      min-height: 440px;
-      resize: vertical;
-      line-height: 1.75;
-      border-radius: 12px;
-    }
-    .icon-btn, .btn {
-      border: 1px solid var(--line);
-      background: var(--panel);
-      border-radius: 12px;
-      min-height: 44px;
-      padding: 0 14px;
-      transition: background .18s var(--ease), border-color .18s var(--ease), transform .12s var(--ease);
-    }
-    .icon-btn { width: 44px; padding: 0; font-size: 1.1rem; }
-    .btn.primary { background: var(--brand); color: #f4faf7; border-color: var(--brand); }
-    .btn.primary:hover { background: #164038; }
-    .btn.primary.done { background: var(--brand-2); border-color: var(--brand-2); }
-    .btn.ghost:hover, .icon-btn:hover { border-color: #b7c6bf; background: #f7faf8; }
-    .btn:active, .icon-btn:active { transform: translateY(1px); }
-    .btn.danger, .link-danger {
-      background: transparent;
-      border: 0;
-      color: var(--danger);
-      min-height: 40px;
-      padding: 0 8px;
-    }
-    .meta {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      align-items: baseline;
-      flex-wrap: wrap;
-      padding-bottom: 14px;
-    }
-    #day-label { font-size: 1.25rem; font-weight: 700; letter-spacing: -0.02em; }
-    #stats { display: flex; flex-wrap: wrap; gap: 8px 16px; color: var(--muted); }
-    #stats b { color: var(--ink); }
+    .metric.warn { background: #fff8e8; border-color: #f0dfb0; color: #7a5b12; }
+    .metric.warn b { color: #6a4d0c; }
+
+    /* Tabs */
     .tabs {
       position: sticky;
       top: 0;
-      z-index: 5;
-      display: flex;
+      z-index: 6;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
       gap: 4px;
       padding: 4px;
       margin-bottom: 18px;
-      background: rgba(242, 245, 243, .92);
-      backdrop-filter: blur(10px);
+      background: rgba(238, 242, 240, .88);
+      backdrop-filter: blur(12px);
       border: 1px solid var(--line);
       border-radius: 14px;
     }
     .tabs button {
-      flex: 1;
       border: 0;
       background: transparent;
-      min-height: 42px;
+      min-height: 44px;
       border-radius: 10px;
       color: var(--muted);
-      font-weight: 600;
+      font-weight: 700;
+      transition: background .15s var(--ease), color .15s var(--ease), box-shadow .15s var(--ease);
     }
     .tabs button[aria-selected="true"] {
       background: var(--panel);
-      color: var(--ink);
+      color: var(--brand);
       box-shadow: var(--shadow);
     }
+
     .panel { display: none; }
-    .panel.on { display: block; animation: rise .28s var(--ease); }
+    .panel.on { display: block; animation: rise .24s var(--ease); }
     @keyframes rise {
-      from { opacity: .45; transform: translateY(8px); }
+      from { opacity: .4; transform: translateY(6px); }
       to { opacity: 1; transform: none; }
     }
-    .grid {
+
+    /* Layout */
+    .layout {
       display: grid;
       gap: 18px;
       align-items: start;
     }
     @media (min-width: 980px) {
-      .grid { grid-template-columns: minmax(0, 1.15fr) minmax(320px, .85fr); }
-      .report { position: sticky; top: 76px; }
+      .layout { grid-template-columns: minmax(0, 1.2fr) minmax(300px, .8fr); }
+      .report-card { position: sticky; top: 78px; }
     }
+
     .card {
       background: var(--panel);
       border: 1px solid var(--line);
       border-radius: var(--radius);
       box-shadow: var(--shadow);
-      padding: 16px;
+      overflow: hidden;
     }
-    .toolbar {
+    .card-pad { padding: 16px; }
+    .card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+      background: var(--bg-soft);
+    }
+    .card-head h2 {
+      font-size: 1rem;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+    }
+    .card-actions {
       display: flex;
       gap: 8px;
       flex-wrap: wrap;
-      margin-bottom: 14px;
-    }
-    .toolbar .grow { flex: 1 1 180px; }
-    .site-block + .site-block { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line); }
-    .site-head {
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
-      align-items: baseline;
-      margin-bottom: 8px;
-    }
-    .site-head h2 { font-size: 1.02rem; font-weight: 700; }
-    .pill {
-      color: var(--muted);
-      font-size: .82rem;
-      font-weight: 700;
-    }
-    .pill.accent { color: var(--brand-2); }
-    .roster { list-style: none; margin: 0; padding: 0; }
-    .roster li {
-      display: grid;
-      grid-template-columns: 28px minmax(0, 1fr) minmax(150px, 220px);
-      gap: 8px 10px;
       align-items: center;
-      padding: 8px;
+    }
+
+    /* Controls */
+    input, select, textarea {
+      width: 100%;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      min-height: var(--tap);
+      padding: 10px 12px;
+      min-width: 0;
+      max-width: 100%;
+      transition: border-color .15s var(--ease), box-shadow .15s var(--ease);
+    }
+    input:hover, select:hover, textarea:hover { border-color: var(--line-strong); }
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(26, 107, 82, .12);
+      outline: none;
+    }
+    textarea {
+      min-height: 420px;
+      resize: vertical;
+      line-height: 1.75;
       border-radius: 12px;
     }
-    .roster li:hover { background: #f5f8f6; }
-    .idx { color: var(--muted); font-weight: 700; }
-    .note { color: var(--muted); font-size: .9rem; margin-top: 2px; }
-    .side-list { list-style: none; margin: 8px 0 0; padding: 0; }
-    .side-list li { padding: 4px 0; color: var(--muted); }
-    .report-head {
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      border-radius: var(--radius-sm);
+      min-height: var(--tap);
+      padding: 0 16px;
+      font-weight: 700;
+      white-space: nowrap;
+      transition: background .15s var(--ease), border-color .15s var(--ease), color .15s var(--ease), transform .1s var(--ease);
+    }
+    .btn:active { transform: translateY(1px); }
+    .btn.primary {
+      background: var(--brand);
+      border-color: var(--brand);
+      color: #f3faf7;
+    }
+    .btn.primary:hover { background: var(--brand-mid); border-color: var(--brand-mid); }
+    .btn.primary.done {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+    .btn.ghost:hover {
+      background: var(--bg-soft);
+      border-color: var(--line-strong);
+    }
+    .btn.soft {
+      background: var(--brand-soft);
+      border-color: #c5ddd2;
+      color: var(--brand-mid);
+    }
+    .btn.soft:hover { background: #d5e8e0; }
+    .btn.danger-text, .link-danger {
+      border: 0;
+      background: transparent;
+      color: var(--danger);
+      min-height: 40px;
+      padding: 0 8px;
+      font-weight: 700;
+    }
+    .btn.danger-text:hover, .link-danger:hover { background: var(--danger-soft); border-radius: 8px; }
+
+    .search {
+      flex: 1 1 200px;
+      position: relative;
+    }
+    .search input { padding-inline-start: 14px; }
+
+    /* Board */
+    .site-block + .site-block {
+      margin-top: 4px;
+      padding-top: 16px;
+      border-top: 1px solid var(--line);
+    }
+    .site-head {
       display: flex;
+      align-items: center;
       justify-content: space-between;
       gap: 10px;
-      align-items: center;
-      flex-wrap: wrap;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
     }
-    .report-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-    .live { min-height: 1.25em; margin-top: 10px; color: var(--brand-2); font-weight: 700; }
-    .form-row {
+    .site-head h3 {
+      font-size: 1.02rem;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+    }
+    .count {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 28px;
+      height: 28px;
+      padding: 0 8px;
+      border-radius: 999px;
+      background: var(--bg);
+      color: var(--muted);
+      font-size: .8rem;
+      font-weight: 800;
+    }
+    .count.accent {
+      background: var(--brand-soft);
+      color: var(--accent);
+    }
+    .roster {
+      list-style: none;
+      margin: 0;
+      padding: 0;
       display: grid;
-      grid-template-columns: 1.3fr .9fr 1.1fr auto;
+      gap: 4px;
+    }
+    .roster li {
+      display: grid;
+      grid-template-columns: 32px minmax(0, 1fr) minmax(160px, 220px);
+      gap: 8px 12px;
+      align-items: center;
+      padding: 10px 10px;
+      border-radius: 12px;
+      transition: background .12s var(--ease);
+    }
+    .roster li:hover { background: var(--bg-soft); }
+    .idx {
+      width: 28px;
+      height: 28px;
+      display: grid;
+      place-items: center;
+      border-radius: 8px;
+      background: var(--bg);
+      color: var(--muted);
+      font-size: .82rem;
+      font-weight: 800;
+    }
+    .person-name { font-weight: 700; }
+    .note {
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: .86rem;
+      line-height: 1.4;
+    }
+    .side-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: 6px;
+    }
+    .side-list li {
+      padding: 8px 10px;
+      border-radius: 10px;
+      background: var(--bg-soft);
+      color: var(--muted);
+      font-weight: 600;
+    }
+    .live {
+      min-height: 1.3em;
+      margin-top: 10px;
+      color: var(--accent);
+      font-size: .9rem;
+      font-weight: 700;
+    }
+    .empty {
+      color: var(--muted);
+      padding: 28px 8px;
+      text-align: center;
+      font-weight: 600;
+    }
+    .error {
+      color: var(--danger);
+      font-weight: 700;
+      margin: 0 0 12px;
+      padding: 10px 12px;
+      background: var(--danger-soft);
+      border-radius: 10px;
+    }
+
+    /* Admin forms */
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1.3fr .85fr 1.1fr auto;
       gap: 10px;
       align-items: end;
-      margin-bottom: 14px;
     }
-    label.field { display: grid; gap: 6px; color: var(--muted); font-size: .82rem; font-weight: 600; }
+    .form-grid.sites {
+      grid-template-columns: 1fr auto auto;
+    }
+    .field {
+      display: grid;
+      gap: 6px;
+      color: var(--muted);
+      font-size: .78rem;
+      font-weight: 700;
+    }
     .check {
       display: flex;
       align-items: center;
       gap: 8px;
-      min-height: 44px;
+      min-height: var(--tap);
       color: var(--ink);
-      font-size: 1rem;
-      font-weight: 500;
+      font-size: .95rem;
+      font-weight: 600;
     }
-    .person, .site-edit {
-      padding: 14px 0;
+    .check input {
+      width: 18px;
+      height: 18px;
+      min-height: 0;
+      accent-color: var(--accent);
+    }
+    .section-gap { margin-top: 16px; }
+    .list-divider {
+      border: 0;
+      border-top: 1px solid var(--line);
+      margin: 0;
+    }
+    .person-card, .site-card {
+      padding: 16px 0;
       border-top: 1px solid var(--line);
     }
-    .person {
+    .person-card:first-child, .site-card:first-child { border-top: 0; padding-top: 4px; }
+    .person-grid {
       display: grid;
-      grid-template-columns: minmax(0, 1.2fr) .8fr auto auto;
-      gap: 8px 12px;
+      grid-template-columns: minmax(0, 1.3fr) .85fr auto auto;
+      gap: 10px 12px;
       align-items: end;
     }
-    .person .span { grid-column: 1 / -1; }
-    .site-edit { display: grid; gap: 10px; }
+    .person-grid .span { grid-column: 1 / -1; }
     .site-top {
       display: flex;
       gap: 12px;
       align-items: end;
       flex-wrap: wrap;
+      margin-bottom: 12px;
     }
     .site-top .field { flex: 1; min-width: 220px; }
     .zones { display: grid; gap: 8px; }
-    .zone-line { display: flex; gap: 8px; }
+    .zone-line { display: flex; gap: 8px; align-items: center; }
     .zone-line input { flex: 1; }
-    .error { color: var(--danger); font-weight: 700; margin: 0 0 10px; }
-    .empty { color: var(--muted); padding: 12px 0; }
-    #add-site { grid-template-columns: 1fr auto auto; }
-    @media (max-width: 820px) {
-      .form-row, #add-site, .person { grid-template-columns: 1fr; }
-      .roster li { grid-template-columns: 28px minmax(0, 1fr); }
+    .site-footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    @media (max-width: 860px) {
+      .app { width: min(100% - 20px, 1120px); padding-top: 16px; }
+      .form-grid, .form-grid.sites, .person-grid {
+        grid-template-columns: 1fr;
+      }
+      .roster li {
+        grid-template-columns: 32px minmax(0, 1fr);
+      }
       .roster li select { grid-column: 1 / -1; }
-      .report-actions {
+      .card-actions.dock {
         position: fixed;
         inset-inline: 0;
         bottom: 0;
         z-index: 8;
         background: var(--brand);
         padding: 10px 14px calc(10px + env(safe-area-inset-bottom));
+        border-radius: 0;
       }
-      .report-actions .btn { flex: 1; }
-      .report-actions .primary { background: #f4faf7; color: var(--brand); border-color: #f4faf7; }
-      .report-actions .ghost { color: #f4faf7; border-color: #7ea897; background: transparent; }
-      body { padding-bottom: 78px; }
+      .card-actions.dock .btn { flex: 1; }
+      .card-actions.dock .primary {
+        background: #f4faf7;
+        color: var(--brand);
+        border-color: #f4faf7;
+      }
+      .card-actions.dock .ghost {
+        color: #f4faf7;
+        border-color: #6f9788;
+        background: transparent;
+      }
+      body { padding-bottom: 84px; }
     }
     @media (prefers-reduced-motion: reduce) {
       .panel.on { animation: none; }
-      .btn, .icon-btn { transition: none; }
+      .btn, .icon-btn, .tabs button, .roster li { transition: none; }
     }
   </style>
 </head>
 <body>
   <div class="app">
-    <header class="hero">
-      <div>
+    <header class="topbar">
+      <div class="brand">
         <h1>الوحدة الصباحية</h1>
-        <p class="sub">شعبة المنشآت الصحية — العتبة العلوية المقدسة</p>
+        <p>شعبة المنشآت الصحية — العتبة العلوية المقدسة</p>
       </div>
-      <div class="datebox">
-        التاريخ
-        <div class="date-row">
+      <div class="date-control">
+        <span>التاريخ</span>
+        <div class="date-nav">
           <button type="button" class="icon-btn" id="prev-day" aria-label="اليوم السابق">›</button>
           <input id="work-date" type="date">
           <button type="button" class="icon-btn" id="next-day" aria-label="اليوم التالي">‹</button>
@@ -297,9 +548,9 @@
       </div>
     </header>
 
-    <div class="meta">
-      <p id="day-label"></p>
-      <p id="stats"></p>
+    <div class="daystrip">
+      <p class="day-title" id="day-label"></p>
+      <div class="metrics" id="stats"></div>
     </div>
 
     <nav class="tabs" id="nav" aria-label="الأقسام">
@@ -310,52 +561,72 @@
 
     <main>
       <section id="panel-plan" class="panel on">
-        <div class="grid">
+        <div class="layout">
           <section class="card">
-            <div class="toolbar">
-              <input class="grow" id="board-filter" type="search" placeholder="بحث" autocomplete="off">
-              <button type="button" class="btn ghost" id="redistribute">إعادة توزيع اليوم</button>
-              <button type="button" class="btn ghost" id="reset-seed">الأصل</button>
+            <div class="card-head">
+              <h2>لوحة التوزيع</h2>
+              <div class="card-actions">
+                <div class="search">
+                  <input id="board-filter" type="search" placeholder="بحث عن منتسب" autocomplete="off">
+                </div>
+                <button type="button" class="btn soft" id="redistribute">إعادة توزيع</button>
+                <button type="button" class="btn ghost" id="reset-seed">الأصل</button>
+              </div>
             </div>
-            <div id="board"></div>
+            <div class="card-pad" id="board"></div>
           </section>
-          <section class="card report">
-            <div class="report-head">
-              <h2>التقرير</h2>
-              <div class="report-actions">
+
+          <section class="card report-card">
+            <div class="card-head">
+              <h2>تقرير واتساب</h2>
+              <div class="card-actions dock">
                 <button type="button" class="btn primary" id="copy-report">نسخ</button>
                 <button type="button" class="btn ghost" id="rebuild-report">تحديث</button>
               </div>
             </div>
-            <textarea id="report" dir="rtl" spellcheck="false" aria-label="نص التقرير"></textarea>
-            <p class="live" id="copy-msg" aria-live="polite"></p>
+            <div class="card-pad">
+              <textarea id="report" dir="rtl" spellcheck="false" aria-label="نص التقرير"></textarea>
+              <p class="live" id="copy-msg" aria-live="polite"></p>
+            </div>
           </section>
         </div>
       </section>
 
       <section id="panel-people" class="panel">
         <section class="card">
-          <form id="add-person" class="form-row">
-            <label class="field">الاسم<input name="name" required autocomplete="off"></label>
-            <label class="field">الاستراحة<select name="rest"></select></label>
-            <label class="field">موقع أساسي<select name="site"></select></label>
-            <button class="btn primary" type="submit">إضافة</button>
-          </form>
-          <p id="add-error" class="error" hidden></p>
-          <label class="field">بحث<input id="people-filter" autocomplete="off"></label>
-          <div id="people-list"></div>
+          <div class="card-head">
+            <h2>المنتسبون</h2>
+          </div>
+          <div class="card-pad">
+            <form id="add-person" class="form-grid">
+              <label class="field">الاسم<input name="name" required autocomplete="off"></label>
+              <label class="field">الاستراحة<select name="rest"></select></label>
+              <label class="field">موقع أساسي<select name="site"></select></label>
+              <button class="btn primary" type="submit">إضافة</button>
+            </form>
+            <p id="add-error" class="error" hidden></p>
+            <div class="section-gap">
+              <label class="field">بحث<input id="people-filter" type="search" autocomplete="off" placeholder="ابحث بالاسم"></label>
+            </div>
+            <div id="people-list" class="section-gap"></div>
+          </div>
         </section>
       </section>
 
       <section id="panel-sites" class="panel">
         <section class="card">
-          <form id="add-site" class="form-row">
-            <label class="field">اسم الموقع<input name="title" required autocomplete="off"></label>
-            <label class="check"><input name="fridayOnly" type="checkbox"> جمعة فقط</label>
-            <button class="btn primary" type="submit">إضافة</button>
-          </form>
-          <p id="site-error" class="error" hidden></p>
-          <div id="sites-list"></div>
+          <div class="card-head">
+            <h2>المواقع</h2>
+          </div>
+          <div class="card-pad">
+            <form id="add-site" class="form-grid sites">
+              <label class="field">اسم الموقع<input name="title" required autocomplete="off"></label>
+              <label class="check"><input name="fridayOnly" type="checkbox"> جمعة فقط</label>
+              <button class="btn primary" type="submit">إضافة</button>
+            </form>
+            <p id="site-error" class="error" hidden></p>
+            <div id="sites-list" class="section-gap"></div>
+          </div>
         </section>
       </section>
     </main>
@@ -399,7 +670,7 @@
         { id: "farewell", title: "متنقلة التوديع", fridayOnly: false, zones: [] },
         { id: "garage", title: "متنقلة گراج ابوتراب", fridayOnly: true, zones: [] },
         { id: "murtada", title: "استراحة المرتضى", fridayOnly: true, zones: [] },
-        { id: "ridha", title: "صحيات مدينة الإمام الرضا عليه السلام", fridayOnly: false, zones: [] }
+        { id: "ridha", title: "صحيات مدينة امام الرضا عليه السلام", fridayOnly: false, zones: [] }
       ];
       const person = (id, name, rest, site, zoneId, note) => ({
         id, name, rest, site, zone: zoneId || "", note: note || "", leave: false
@@ -452,14 +723,16 @@
         const saved = JSON.parse(localStorage.getItem(STORE_KEY) || "null");
         if (saved && Array.isArray(saved.people) && Array.isArray(saved.sites)) {
           saved.daily = saved.daily && typeof saved.daily === "object" ? saved.daily : {};
-          saved.sites.forEach((site) => { site.zones = site.zones || []; });
+          saved.sites.forEach((site) => { site.zones = Array.isArray(site.zones) ? site.zones : []; });
           saved.people.forEach((person) => {
             person.zone = person.zone || "";
             person.note = person.note || "";
             person.leave = Boolean(person.leave);
             person.rest = person.rest || "";
             person.site = person.site || "";
+            person.name = String(person.name || "").trim();
           });
+          saved.people = saved.people.filter((person) => person.id && person.name);
           return saved;
         }
       } catch (err) { /* الأصل */ }
@@ -476,7 +749,8 @@
       return date.getFullYear() + "-" + z(date.getMonth() + 1) + "-" + z(date.getDate());
     }
     function parseISO(dateISO) {
-      const parts = dateISO.split("-").map(Number);
+      const parts = String(dateISO || "").split("-").map(Number);
+      if (parts.length !== 3 || parts.some((n) => !Number.isFinite(n))) return new Date();
       return new Date(parts[0], parts[1] - 1, parts[2]);
     }
     function weekdayId(dateISO) {
@@ -512,9 +786,14 @@
       const key = name.trim();
       return state.people.some((person) => person.id !== exceptId && person.name.trim() === key);
     }
+    function byName(a, b) { return a.name.localeCompare(b.name, "ar"); }
     function dayOptions(selected) {
       const head = `<option value=""${!selected ? " selected" : ""}>بلا استراحة</option>`;
       return head + DAYS.map((d) => `<option value="${d.id}"${d.id === selected ? " selected" : ""}>${d.name}</option>`).join("");
+    }
+    function openSitesFor(dateISO) {
+      const day = weekdayId(dateISO);
+      return state.sites.filter((s) => !s.fridayOnly || day === "fri");
     }
     function siteOptions(selected, openOnlyDay) {
       const sites = state.sites.filter((s) => !openOnlyDay || !s.fridayOnly || openOnlyDay === "fri");
@@ -522,9 +801,14 @@
         `<option value="${esc(s.id)}"${s.id === selected ? " selected" : ""}>${esc(s.title)}</option>`
       ).join("");
     }
-    function openSitesFor(dateISO) {
-      const day = weekdayId(dateISO);
-      return state.sites.filter((s) => !s.fridayOnly || day === "fri");
+    function siteOptionsForMove(personId, selected, dateISO) {
+      const used = sitesUsedInWeek(personId, dateISO);
+      const sites = openSitesFor(dateISO).filter((site) => site.id === selected || !used.has(site.id));
+      const options = sites.map((s) =>
+        `<option value="${esc(s.id)}"${s.id === selected ? " selected" : ""}>${esc(s.title)}</option>`
+      ).join("");
+      const waiting = `<option value=""${!selected ? " selected" : ""}>بانتظار موقع</option>`;
+      return waiting + options;
     }
     function isOff(person, dateISO) {
       const day = weekdayId(dateISO);
@@ -533,7 +817,7 @@
     function uniquePeople(list) {
       const seen = new Set();
       return list.filter((person) => {
-        if (seen.has(person.id)) return false;
+        if (!person || !person.id || seen.has(person.id)) return false;
         seen.add(person.id);
         return true;
       });
@@ -560,6 +844,10 @@
         if (!siteId || !openIds.has(siteId)) { waiting.push(person); return; }
         bySite.get(siteId).push({ person, zoneId });
       });
+      bySite.forEach((rows) => rows.sort((a, b) => byName(a.person, b.person)));
+      rest.sort(byName);
+      leave.sort(byName);
+      waiting.sort(byName);
       return { day, openSites, bySite, rest, leave, waiting };
     }
     function hashPick(seed, mod) {
@@ -590,13 +878,18 @@
     }
     function redistributeDay(dateISO) {
       const openSites = openSitesFor(dateISO);
+      if (!openSites.length) {
+        state.daily[dateISO] = {};
+        save();
+        return;
+      }
       const available = uniquePeople(state.people).filter((person) => !isOff(person, dateISO));
       const load = Object.fromEntries(openSites.map((site) => [site.id, 0]));
       const nextDaily = {};
       const ordered = available.slice().sort((a, b) => {
         const ha = hashPick(dateISO + a.id, 100000);
         const hb = hashPick(dateISO + b.id, 100000);
-        return ha - hb || a.name.localeCompare(b.name, "ar");
+        return ha - hb || byName(a, b);
       });
       ordered.forEach((person) => {
         const used = sitesUsedInWeek(person.id, dateISO);
@@ -679,35 +972,39 @@
       return !q || name.includes(q);
     }
     function paintBoard() {
-      const dateISO = document.getElementById("work-date").value;
+      const dateISO = document.getElementById("work-date").value || todayISO();
       ensureDayPlan(dateISO);
       const view = classify(dateISO);
-      document.getElementById("day-label").textContent = DAY_NAME[view.day] + "  " + dateISO.split("-").join("/");
+      document.getElementById("day-label").textContent = DAY_NAME[view.day] + " · " + dateISO.split("-").join("/");
       const working = [...view.bySite.values()].reduce((sum, rows) => sum + rows.length, 0);
       document.getElementById("stats").innerHTML = [
-        ["دوام", working],
-        ["استراحة", view.rest.length],
-        ["إجازة", view.leave.length],
-        ["بانتظار", view.waiting.length]
-      ].map(([label, count]) => `<span>${label} <b>${count}</b></span>`).join("");
+        ["دوام", working, ""],
+        ["استراحة", view.rest.length, ""],
+        ["إجازة", view.leave.length, ""],
+        ["بانتظار", view.waiting.length, view.waiting.length ? "warn" : ""]
+      ].map(([label, count, klass]) =>
+        `<span class="metric${klass ? " " + klass : ""}">${label} <b>${count}</b></span>`
+      ).join("");
 
       const personRow = (person, index, selectedSite) => `
         <li>
           <span class="idx">${index + 1}</span>
           <div>
-            <strong>${esc(person.name)}</strong>
+            <div class="person-name">${esc(person.name)}</div>
             ${person.note ? `<div class="note">${esc(person.note)}</div>` : ""}
           </div>
-          <select data-move="${esc(person.id)}" aria-label="موقع ${esc(person.name)}">${siteOptions(selectedSite, view.day)}</select>
+          <select data-move="${esc(person.id)}" aria-label="موقع ${esc(person.name)}">${siteOptionsForMove(person.id, selectedSite, dateISO)}</select>
         </li>`;
 
       const blocks = [];
       view.openSites.forEach((site) => {
         const rows = (view.bySite.get(site.id) || []).filter((row) => matchesQuery(row.person.name, boardQuery));
         if (!rows.length) return;
-        const pill = site.fridayOnly ? `<span class="pill accent">جمعة</span>` : `<span class="pill">${rows.length}</span>`;
+        const pill = site.fridayOnly
+          ? `<span class="count accent">جمعة</span>`
+          : `<span class="count">${rows.length}</span>`;
         blocks.push(`<section class="site-block">
-          <div class="site-head"><h2>${esc(site.title)}</h2>${pill}</div>
+          <div class="site-head"><h3>${esc(site.title)}</h3>${pill}</div>
           <ol class="roster">${rows.map((row, index) => personRow(row.person, index, site.id)).join("")}</ol>
         </section>`);
       });
@@ -715,7 +1012,7 @@
       const waiting = view.waiting.filter((person) => matchesQuery(person.name, boardQuery));
       if (waiting.length) {
         blocks.push(`<section class="site-block">
-          <div class="site-head"><h2>بانتظار موقع</h2><span class="pill">${waiting.length}</span></div>
+          <div class="site-head"><h3>بانتظار موقع</h3><span class="count">${waiting.length}</span></div>
           <ol class="roster">${waiting.map((person, index) => personRow(person, index, "")).join("")}</ol>
         </section>`);
       }
@@ -723,7 +1020,7 @@
         const rest = view.rest.filter((person) => matchesQuery(person.name, boardQuery));
         if (rest.length) {
           blocks.push(`<section class="site-block">
-            <div class="site-head"><h2>استراحة</h2><span class="pill">${rest.length}</span></div>
+            <div class="site-head"><h3>استراحة</h3><span class="count">${rest.length}</span></div>
             <ul class="side-list">${rest.map((p) => `<li>${esc(p.name)}</li>`).join("")}</ul>
           </section>`);
         }
@@ -732,7 +1029,7 @@
         const leave = view.leave.filter((person) => matchesQuery(person.name, boardQuery));
         if (leave.length) {
           blocks.push(`<section class="site-block">
-            <div class="site-head"><h2>إجازة</h2><span class="pill">${leave.length}</span></div>
+            <div class="site-head"><h3>إجازة</h3><span class="count">${leave.length}</span></div>
             <ul class="side-list">${leave.map((p) => `<li>${esc(p.name)}</li>`).join("")}</ul>
           </section>`);
         }
@@ -743,15 +1040,20 @@
     }
     function paintPeople() {
       armed = null;
-      const matched = state.people.filter((person) => matchesQuery(person.name, peopleQuery));
+      const matched = state.people
+        .filter((person) => matchesQuery(person.name, peopleQuery))
+        .slice()
+        .sort(byName);
       document.getElementById("people-list").innerHTML = matched.length
         ? matched.map((person) => `
-          <form class="person" data-person="${esc(person.id)}">
-            <label class="field">الاسم<input name="name" value="${esc(person.name)}" required autocomplete="off"></label>
-            <label class="field">الاستراحة<select name="rest">${dayOptions(person.rest)}</select></label>
-            <label class="check"><input name="leave" type="checkbox"${person.leave ? " checked" : ""}> مجاز</label>
-            <button type="button" class="link-danger" data-delete-person="${esc(person.id)}">حذف</button>
-            <label class="field span">ملاحظة<input name="note" value="${esc(person.note)}" autocomplete="off"></label>
+          <form class="person-card" data-person="${esc(person.id)}">
+            <div class="person-grid">
+              <label class="field">الاسم<input name="name" value="${esc(person.name)}" required autocomplete="off"></label>
+              <label class="field">الاستراحة<select name="rest">${dayOptions(person.rest)}</select></label>
+              <label class="check"><input name="leave" type="checkbox"${person.leave ? " checked" : ""}> مجاز</label>
+              <button type="button" class="link-danger" data-delete-person="${esc(person.id)}">حذف</button>
+              <label class="field span">ملاحظة<input name="note" value="${esc(person.note)}" autocomplete="off"></label>
+            </div>
           </form>`).join("")
         : `<p class="empty">لا نتائج</p>`;
       const addRest = document.querySelector("#add-person select[name=rest]");
@@ -768,29 +1070,30 @@
             <input data-zone-label="${esc(site.id)}" data-zone="${esc(zone.id)}" value="${esc(zone.label)}" aria-label="تفصيلة">
             <button type="button" class="link-danger" data-delete-zone="${esc(site.id)}" data-zone="${esc(zone.id)}">حذف</button>
           </div>`).join("");
-        return `<form class="site-edit" data-site="${esc(site.id)}">
+        return `<form class="site-card" data-site="${esc(site.id)}">
           <div class="site-top">
             <label class="field">الموقع<input name="title" value="${esc(site.title)}" required></label>
             <label class="check"><input name="fridayOnly" type="checkbox"${site.fridayOnly ? " checked" : ""}> جمعة فقط</label>
           </div>
-          <div class="zones">
-            ${zones}
-            <button type="button" class="btn ghost" data-add-zone="${esc(site.id)}">تفصيلة</button>
+          <div class="zones">${zones}</div>
+          <div class="site-footer">
+            <button type="button" class="btn ghost" data-add-zone="${esc(site.id)}">إضافة تفصيلة</button>
+            <button type="button" class="link-danger" data-delete-site="${esc(site.id)}">حذف الموقع</button>
           </div>
-          <button type="button" class="link-danger" data-delete-site="${esc(site.id)}">حذف الموقع</button>
         </form>`;
       }).join("") || `<p class="empty">لا مواقع</p>`;
     }
     function refreshAll() { paintPeople(); paintSites(); paintBoard(); }
     function applyDate(dateISO, opts) {
       const options = opts || {};
-      dateInput.value = dateISO || todayISO();
+      const next = dateISO || todayISO();
+      dateInput.value = next;
       boardQuery = "";
       document.getElementById("board-filter").value = "";
-      if (options.forceRedistribute) redistributeDay(dateInput.value);
-      else ensureDayPlan(dateInput.value);
+      if (options.forceRedistribute) redistributeDay(next);
+      else ensureDayPlan(next);
       reportDirty = false;
-      setReport(buildReport(dateInput.value), false);
+      setReport(buildReport(next), false);
       paintBoard();
       document.getElementById("copy-msg").textContent = options.message || "";
     }
@@ -834,7 +1137,7 @@
       });
     });
     document.getElementById("redistribute").addEventListener("click", () => {
-      redistributeDay(dateInput.value);
+      redistributeDay(dateInput.value || todayISO());
       reportDirty = false;
       setReport(buildReport(dateInput.value), false);
       paintBoard();
@@ -853,8 +1156,16 @@
       if (!select) return;
       const person = personById(select.dataset.move);
       if (!person) return;
-      const dateISO = dateInput.value;
+      const dateISO = dateInput.value || todayISO();
       const nextSite = select.value;
+      if (nextSite) {
+        const used = sitesUsedInWeek(person.id, dateISO);
+        if (used.has(nextSite)) {
+          select.value = (state.daily[dateISO] && state.daily[dateISO][person.id] && state.daily[dateISO][person.id].siteId) || "";
+          document.getElementById("copy-msg").textContent = "هذا الموقع مستخدم لنفس المنتسب خلال الأسبوع.";
+          return;
+        }
+      }
       const site = siteById(nextSite);
       const zoneOk = site && site.zones.some((zone) => zone.id === person.zone);
       state.daily[dateISO] = state.daily[dateISO] || {};
@@ -867,7 +1178,7 @@
     });
     document.getElementById("report").addEventListener("input", () => { reportDirty = true; });
     document.getElementById("rebuild-report").addEventListener("click", () => {
-      setReport(buildReport(dateInput.value), false);
+      setReport(buildReport(dateInput.value || todayISO()), false);
       document.getElementById("copy-msg").textContent = "حُدّث التقرير.";
     });
     document.getElementById("copy-report").addEventListener("click", async () => {
@@ -940,7 +1251,11 @@
     document.getElementById("people-list").addEventListener("click", (event) => {
       const button = event.target.closest("[data-delete-person]");
       if (!button || !wantsConfirm(button, "تأكيد؟")) return;
-      state.people = state.people.filter((item) => item.id !== button.dataset.deletePerson);
+      const pid = button.dataset.deletePerson;
+      state.people = state.people.filter((item) => item.id !== pid);
+      Object.keys(state.daily).forEach((day) => {
+        if (state.daily[day] && state.daily[day][pid]) delete state.daily[day][pid];
+      });
       save();
       refreshAll();
     });
@@ -987,6 +1302,8 @@
       const add = event.target.closest("[data-add-zone]");
       if (add) {
         const site = siteById(add.dataset.addZone);
+        if (!site) return;
+        site.zones = site.zones || [];
         site.zones.push({ id: nextId(site.id + "z", site.zones), label: "تفصيلة جديدة" });
         save();
         refreshAll();
@@ -996,6 +1313,7 @@
       if (zoneButton) {
         if (!wantsConfirm(zoneButton, "تأكيد؟")) return;
         const site = siteById(zoneButton.dataset.deleteZone);
+        if (!site) return;
         site.zones = site.zones.filter((zone) => zone.id !== zoneButton.dataset.zone);
         state.people.forEach((person) => {
           if (person.zone === zoneButton.dataset.zone) person.zone = "";
@@ -1007,6 +1325,7 @@
       const siteButton = event.target.closest("[data-delete-site]");
       if (!siteButton || !wantsConfirm(siteButton, "تأكيد؟")) return;
       const site = siteById(siteButton.dataset.deleteSite);
+      if (!site) return;
       state.sites = state.sites.filter((item) => item.id !== site.id);
       state.people.forEach((person) => {
         if (person.site === site.id) { person.site = ""; person.zone = ""; }
