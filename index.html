@@ -7,7 +7,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <title>خطة خدام الوحدة الصباحية</title>
-  <meta name="description" content="توزيع واجبات خدام الوحدة الصباحية في شعبة المنشآت الصحية، مع تقرير جاهز للنسخ إلى واتساب.">
+  <meta name="description" content="توزيع واجبات خدام الوحدة الصباحية مع تقرير واتساب.">
   <style>
     @font-face {
       font-family: "Mada";
@@ -176,11 +176,12 @@
     /* —— Day strip —— */
     .dayline {
       display: flex;
+      align-items: flex-end;
       justify-content: space-between;
       gap: 14px 24px;
       align-items: center;
       flex-wrap: wrap;
-      padding: 18px 0 14px;
+      margin-bottom: 20px;
     }
     #day-label {
       font-size: clamp(1.25rem, 2vw, 1.5rem);
@@ -539,8 +540,7 @@
     .site-row label:first-child { flex: 1; min-width: 200px; }
     #add-site { grid-template-columns: minmax(0, 1fr) auto auto; }
     .zones { display: grid; gap: 8px; }
-    .zones .texty, .site-edit > .danger { width: auto; justify-self: start; }
-    .zone-line { display: flex; gap: 8px; }
+    .zone-line { display: flex; gap: 8px; align-items: center; }
     .zone-line input { flex: 1; }
 
     .fixed-list { display: grid; gap: 12px; }
@@ -773,9 +773,19 @@
           <p class="sub">شعبة المنشآت الصحية — العتبة العلوية المقدسة</p>
         </div>
       </div>
-      <label class="date-field">تاريخ الدوام
-        <input id="work-date" type="date">
-      </label>
+      <div class="date-control">
+        <span>التاريخ</span>
+        <div class="date-nav">
+          <button type="button" class="icon-btn" id="prev-day" aria-label="اليوم السابق">›</button>
+          <input id="work-date" type="date">
+          <button type="button" class="icon-btn" id="next-day" aria-label="اليوم التالي">‹</button>
+        </div>
+      </div>
+    </header>
+
+    <div class="daystrip">
+      <p class="day-title" id="day-label"></p>
+      <div class="metrics" id="stats"></div>
     </div>
   </header>
 
@@ -819,9 +829,21 @@
                 <button type="button" class="ghost" id="rebuild-report">إعادة البناء</button>
               </div>
             </div>
-            <p id="report-note" class="warn" hidden></p>
-            <textarea id="report" dir="rtl" spellcheck="false" aria-label="نص التقرير"></textarea>
-            <p class="live" id="copy-msg" aria-live="polite"></p>
+            <div class="card-pad" id="board"></div>
+          </section>
+
+          <section class="card report-card">
+            <div class="card-head">
+              <h2>تقرير واتساب</h2>
+              <div class="card-actions dock">
+                <button type="button" class="btn primary" id="copy-report">نسخ</button>
+                <button type="button" class="btn ghost" id="rebuild-report">تحديث</button>
+              </div>
+            </div>
+            <div class="card-pad">
+              <textarea id="report" dir="rtl" spellcheck="false" aria-label="نص التقرير"></textarea>
+              <p class="live" id="copy-msg" aria-live="polite"></p>
+            </div>
           </section>
         </div>
       </section>
@@ -921,7 +943,7 @@
       { id: "fri", name: "الجمعة" }
     ];
     const DAY_NAME = Object.fromEntries(DAYS.map((d) => [d.id, d.name]));
-    const STORE_KEY = "khadam-morning-unit-v1";
+    const STORE_KEY = "khadam-morning-unit-v4";
 
     function seed() {
       const zone = (id, label) => ({ id, label });
@@ -948,7 +970,7 @@
         { id: "farewell", title: "متنقلة التوديع", fridayOnly: false, zones: [] },
         { id: "garage", title: "متنقلة گراج ابوتراب", fridayOnly: true, zones: [] },
         { id: "murtada", title: "استراحة المرتضى", fridayOnly: true, zones: [] },
-        { id: "ridha", title: "صحيات مدينة الإمام الرضا عليه السلام", fridayOnly: false, zones: [] }
+        { id: "ridha", title: "صحيات مدينة امام الرضا عليه السلام", fridayOnly: false, zones: [] }
       ];
       const person = (id, name, rest, site, zoneId, note) => ({
         id, name, rest, site, zone: zoneId || "", note: note || "", leave: false
@@ -996,6 +1018,7 @@
     let state = load();
     let reportDirty = false;
     let peopleQuery = "";
+    let boardQuery = "";
     let armed = null;
 
     function migrateHassanFixed(data) {
@@ -1029,7 +1052,7 @@
           if (dirty) localStorage.setItem(STORE_KEY, JSON.stringify(saved));
           return saved;
         }
-      } catch (err) { /* الخطة الأصلية */ }
+      } catch (err) { /* الأصل */ }
       return seed();
     }
     function save() { localStorage.setItem(STORE_KEY, JSON.stringify(state)); }
@@ -1071,9 +1094,32 @@
       const z = (n) => String(n).padStart(2, "0");
       return d.getFullYear() + "-" + z(d.getMonth() + 1) + "-" + z(d.getDate());
     }
+    function toISO(date) {
+      const z = (n) => String(n).padStart(2, "0");
+      return date.getFullYear() + "-" + z(date.getMonth() + 1) + "-" + z(date.getDate());
+    }
+    function parseISO(dateISO) {
+      const parts = String(dateISO || "").split("-").map(Number);
+      if (parts.length !== 3 || parts.some((n) => !Number.isFinite(n))) return new Date();
+      return new Date(parts[0], parts[1] - 1, parts[2]);
+    }
     function weekdayId(dateISO) {
-      const parts = dateISO.split("-").map(Number);
-      return ["sun", "mon", "tue", "wed", "thu", "fri", "sat"][new Date(parts[0], parts[1] - 1, parts[2]).getDay()];
+      return ["sun", "mon", "tue", "wed", "thu", "fri", "sat"][parseISO(dateISO).getDay()];
+    }
+    function shiftDate(iso, days) {
+      const dt = parseISO(iso);
+      dt.setDate(dt.getDate() + days);
+      return toISO(dt);
+    }
+    function weekStartISO(dateISO) {
+      const dt = parseISO(dateISO);
+      const sinceSat = (dt.getDay() + 1) % 7;
+      dt.setDate(dt.getDate() - sinceSat);
+      return toISO(dt);
+    }
+    function weekDates(dateISO) {
+      const start = weekStartISO(dateISO);
+      return [0, 1, 2, 3, 4, 5, 6].map((n) => shiftDate(start, n));
     }
     function esc(value) {
       return String(value ?? "").replace(/[&<>"']/g, (ch) => ({
@@ -1089,8 +1135,13 @@
       const nums = list.map((item) => Number(String(item.id).replace(/\D/g, "")) || 0);
       return prefix + (Math.max(0, ...nums) + 1);
     }
+    function nameTaken(name, exceptId) {
+      const key = name.trim();
+      return state.people.some((person) => person.id !== exceptId && person.name.trim() === key);
+    }
+    function byName(a, b) { return a.name.localeCompare(b.name, "ar"); }
     function dayOptions(selected) {
-      const head = `<option value=""${selected ? "" : " selected"}>بلا استراحة أسبوعية</option>`;
+      const head = `<option value=""${!selected ? " selected" : ""}>بلا استراحة</option>`;
       return head + DAYS.map((d) => `<option value="${d.id}"${d.id === selected ? " selected" : ""}>${d.name}</option>`).join("");
     }
     function siteOptions(selected, openOnlyDay, emptyLabel) {
@@ -1100,11 +1151,33 @@
         `<option value="${esc(s.id)}"${s.id === selected ? " selected" : ""}>${esc(s.title)}</option>`
       ).join("");
     }
-    function zoneOptions(siteId, selected) {
-      const zones = (siteById(siteId) || {}).zones || [];
-      return `<option value="">بدون تفصيلة</option>` + zones.map((z) =>
-        `<option value="${esc(z.id)}"${z.id === selected ? " selected" : ""}>${esc(z.label)}</option>`
+    function siteOptionsForMove(personId, selected, dateISO) {
+      const used = sitesUsedInWeek(personId, dateISO);
+      const sites = openSitesFor(dateISO).filter((site) => site.id === selected || !used.has(site.id));
+      const options = sites.map((s) =>
+        `<option value="${esc(s.id)}"${s.id === selected ? " selected" : ""}>${esc(s.title)}</option>`
       ).join("");
+      const waiting = `<option value=""${!selected ? " selected" : ""}>بانتظار موقع</option>`;
+      return waiting + options;
+    }
+    function isOff(person, dateISO) {
+      const day = weekdayId(dateISO);
+      return Boolean(person.leave || person.rest === day);
+    }
+    function uniquePeople(list) {
+      const seen = new Set();
+      return list.filter((person) => {
+        if (!person || !person.id || seen.has(person.id)) return false;
+        seen.add(person.id);
+        return true;
+      });
+    }
+    function assignmentFor(dateISO, person) {
+      const override = state.daily[dateISO] && state.daily[dateISO][person.id];
+      if (override) return { siteId: override.siteId || "", zoneId: override.zoneId || "" };
+      const openIds = new Set(openSitesFor(dateISO).map((s) => s.id));
+      if (person.site && openIds.has(person.site)) return { siteId: person.site, zoneId: person.zone || "" };
+      return { siteId: "", zoneId: "" };
     }
     function personOptions(selected) {
       return `<option value="">اختر منتسباً</option>` + state.people
@@ -1115,24 +1188,89 @@
     }
     function classify(dateISO) {
       const day = weekdayId(dateISO);
-      const openSites = state.sites.filter((s) => !s.fridayOnly || day === "fri");
+      const openSites = openSitesFor(dateISO);
       const openIds = new Set(openSites.map((s) => s.id));
       const bySite = new Map(openSites.map((s) => [s.id, []]));
       const rest = [];
       const leave = [];
       const waiting = [];
-      const used = new Set();
-      state.people.forEach((person) => {
-        if (used.has(person.id)) return;
-        used.add(person.id);
+      uniquePeople(state.people).forEach((person) => {
         if (person.leave) { leave.push(person); return; }
         if (person.rest === day) { rest.push(person); return; }
-        const siteId = person.site;
-        const zoneId = person.zone;
+        const { siteId, zoneId } = assignmentFor(dateISO, person);
         if (!siteId || !openIds.has(siteId)) { waiting.push(person); return; }
-        bySite.get(siteId).push({ person, zoneId: zoneId || "" });
+        bySite.get(siteId).push({ person, zoneId });
       });
+      bySite.forEach((rows) => rows.sort((a, b) => byName(a.person, b.person)));
+      rest.sort(byName);
+      leave.sort(byName);
+      waiting.sort(byName);
       return { day, openSites, bySite, rest, leave, waiting };
+    }
+    function hashPick(seed, mod) {
+      let h = 2166136261;
+      for (let i = 0; i < seed.length; i += 1) {
+        h ^= seed.charCodeAt(i);
+        h = Math.imul(h, 16777619);
+      }
+      return Math.abs(h) % Math.max(mod, 1);
+    }
+    function sitesUsedInWeek(personId, dateISO) {
+      const used = new Set();
+      weekDates(dateISO).forEach((dayISO) => {
+        if (dayISO === dateISO) return;
+        const person = personById(personId);
+        if (!person || isOff(person, dayISO)) return;
+        const siteId = assignmentFor(dayISO, person).siteId;
+        if (siteId) used.add(siteId);
+      });
+      return used;
+    }
+    function yesterdaySite(personId, dateISO) {
+      const prev = shiftDate(dateISO, -1);
+      if (weekStartISO(prev) !== weekStartISO(dateISO)) return "";
+      const person = personById(personId);
+      if (!person || isOff(person, prev)) return "";
+      return assignmentFor(prev, person).siteId || "";
+    }
+    function redistributeDay(dateISO) {
+      const openSites = openSitesFor(dateISO);
+      if (!openSites.length) {
+        state.daily[dateISO] = {};
+        save();
+        return;
+      }
+      const available = uniquePeople(state.people).filter((person) => !isOff(person, dateISO));
+      const load = Object.fromEntries(openSites.map((site) => [site.id, 0]));
+      const nextDaily = {};
+      const ordered = available.slice().sort((a, b) => {
+        const ha = hashPick(dateISO + a.id, 100000);
+        const hb = hashPick(dateISO + b.id, 100000);
+        return ha - hb || byName(a, b);
+      });
+      ordered.forEach((person) => {
+        const used = sitesUsedInWeek(person.id, dateISO);
+        const ySite = yesterdaySite(person.id, dateISO);
+        let candidates = openSites.filter((site) => !used.has(site.id));
+        if (!candidates.length) candidates = openSites.slice();
+        const fresh = candidates.filter((site) => site.id !== ySite);
+        if (fresh.length) candidates = fresh;
+        candidates.sort((a, b) => {
+          const la = load[a.id] - load[b.id];
+          if (la) return la;
+          return hashPick(dateISO + person.id + a.id, 1000) - hashPick(dateISO + person.id + b.id, 1000);
+        });
+        const chosen = candidates[0];
+        if (!chosen) return;
+        load[chosen.id] += 1;
+        const zoneOk = chosen.id === person.site && chosen.zones.some((zone) => zone.id === person.zone);
+        nextDaily[person.id] = { siteId: chosen.id, zoneId: zoneOk ? person.zone : "" };
+      });
+      state.daily[dateISO] = nextDaily;
+      save();
+    }
+    function ensureDayPlan(dateISO) {
+      if (!state.daily[dateISO] || !Object.keys(state.daily[dateISO]).length) redistributeDay(dateISO);
     }
     function buildReport(dateISO) {
       const view = classify(dateISO);
@@ -1143,7 +1281,7 @@
         ""
       ];
       view.openSites.forEach((site) => {
-        const rows = uniqueRows(view.bySite.get(site.id) || []);
+        const rows = view.bySite.get(site.id) || [];
         if (!rows.length) return;
         lines.push("*" + site.title + "*");
         rows.forEach((row, index) => {
@@ -1156,13 +1294,13 @@
         view.waiting.forEach((person, index) => lines.push((index + 1) + "-" + person.name));
         lines.push("");
       }
-      const detailed = view.openSites.filter((site) => site.zones.length && uniqueRows(view.bySite.get(site.id) || []).some((row) => row.zoneId));
+      const detailed = view.openSites.filter((site) => site.zones.length && (view.bySite.get(site.id) || []).some((row) => row.zoneId));
       if (detailed.length) {
         lines.push("*خطه توزيع المهام على المنتسبين*");
         lines.push("");
         detailed.forEach((site) => {
           lines.push("*" + site.title + "*");
-          const rows = uniqueRows(view.bySite.get(site.id) || []);
+          const rows = view.bySite.get(site.id) || [];
           site.zones.forEach((zone) => {
             const names = rows.filter((row) => row.zoneId === zone.id).map((row) => row.person.name);
             if (!names.length) return;
@@ -1201,10 +1339,11 @@
     window.showTab = showTab;
 
     function paintBoard() {
-      const dateISO = document.getElementById("work-date").value;
+      const dateISO = document.getElementById("work-date").value || todayISO();
+      ensureDayPlan(dateISO);
       const view = classify(dateISO);
-      document.getElementById("day-label").textContent = DAY_NAME[view.day] + "   " + dateISO.split("-").join("/");
-      const working = [...view.bySite.values()].reduce((sum, rows) => sum + uniqueRows(rows).length, 0);
+      document.getElementById("day-label").textContent = DAY_NAME[view.day] + " · " + dateISO.split("-").join("/");
+      const working = [...view.bySite.values()].reduce((sum, rows) => sum + rows.length, 0);
       document.getElementById("stats").innerHTML = [
         ["في الدوام", working, "work"],
         ["استراحة", view.rest.length, "rest"],
@@ -1291,8 +1430,10 @@
 
     function paintPeople() {
       armed = null;
-      const q = peopleQuery.trim();
-      const matched = state.people.filter((person) => !q || person.name.includes(q));
+      const matched = state.people
+        .filter((person) => matchesQuery(person.name, peopleQuery))
+        .slice()
+        .sort(byName);
       document.getElementById("people-list").innerHTML = matched.length
         ? matched.map(personCard).join("")
         : `<div class="empty">لا توجد نتيجة بهذا الاسم.</div>`;
@@ -1304,19 +1445,23 @@
     }
 
     function paintSites() {
+      armed = null;
       document.getElementById("sites-list").innerHTML = state.sites.map((site) => {
         const zones = (site.zones || []).map((zone) => `
           <div class="zone-line">
-            <input data-zone-label="${esc(site.id)}" data-zone="${esc(zone.id)}" value="${esc(zone.label)}" aria-label="اسم التفصيلة">
-            <button type="button" class="danger" data-delete-zone="${esc(site.id)}" data-zone="${esc(zone.id)}">حذف</button>
+            <input data-zone-label="${esc(site.id)}" data-zone="${esc(zone.id)}" value="${esc(zone.label)}" aria-label="تفصيلة">
+            <button type="button" class="link-danger" data-delete-zone="${esc(site.id)}" data-zone="${esc(zone.id)}">حذف</button>
           </div>`).join("");
-        return `<form class="site-edit" data-site="${esc(site.id)}">
-          <div class="site-row">
-            <label>اسم الموقع<input name="title" value="${esc(site.title)}" required></label>
+        return `<form class="site-card" data-site="${esc(site.id)}">
+          <div class="site-top">
+            <label class="field">الموقع<input name="title" value="${esc(site.title)}" required></label>
             <label class="check"><input name="fridayOnly" type="checkbox"${site.fridayOnly ? " checked" : ""}> جمعة فقط</label>
           </div>
-          <div class="zones">${zones}<button type="button" class="texty" data-add-zone="${esc(site.id)}">إضافة تفصيلة داخل الموقع</button></div>
-          <button type="button" class="danger" data-delete-site="${esc(site.id)}">حذف الموقع</button>
+          <div class="zones">${zones}</div>
+          <div class="site-footer">
+            <button type="button" class="btn ghost" data-add-zone="${esc(site.id)}">إضافة تفصيلة</button>
+            <button type="button" class="link-danger" data-delete-site="${esc(site.id)}">حذف الموقع</button>
+          </div>
         </form>`;
       }).join("") || `<div class="empty">لا مواقع بعد.</div>`;
     }
@@ -1354,7 +1499,7 @@
       const name = form.name.value.trim();
       if (!name) { form.name.value = person.name; return; }
       if (nameTaken(name, person.id)) {
-        form.name.setCustomValidity("هذا المنتسب موجود في القائمة");
+        form.name.setCustomValidity("الاسم موجود");
         form.name.reportValidity();
         form.name.value = person.name;
         form.name.setCustomValidity("");
@@ -1382,20 +1527,29 @@
     function wantsConfirm(button, key, label) {
       if (armed && armed.button === button) { armed = null; return true; }
       if (armed) armed.button.textContent = armed.label;
-      armed = { button, label };
+      armed = { button, label: button.textContent };
       button.textContent = label;
       return false;
     }
 
     const dateInput = document.getElementById("work-date");
     dateInput.value = todayISO();
-    dateInput.addEventListener("change", () => {
-      if (!dateInput.value) dateInput.value = todayISO();
-      if (reportDirty) {
-        document.getElementById("report-note").hidden = false;
-        document.getElementById("report-note").textContent = "تغيّر اليوم والتوزيع، والنص ما زال تعديلك. «إعادة البناء» يكتبه من جديد.";
-      }
+    dateInput.addEventListener("change", () => applyDate(dateInput.value || todayISO()));
+    document.getElementById("prev-day").addEventListener("click", () => {
+      applyDate(shiftDate(dateInput.value || todayISO(), -1));
+    });
+    document.getElementById("next-day").addEventListener("click", () => {
+      applyDate(shiftDate(dateInput.value || todayISO(), 1), {
+        forceRedistribute: true,
+        message: "وُزّع الجميع على مواقع جديدة بلا تكرار في الأسبوع."
+      });
+    });
+    document.getElementById("redistribute").addEventListener("click", () => {
+      redistributeDay(dateInput.value || todayISO());
+      reportDirty = false;
+      setReport(buildReport(dateInput.value), false);
       paintBoard();
+      document.getElementById("copy-msg").textContent = "أُعيد توزيع هذا اليوم.";
     });
 
     document.querySelectorAll("#nav button[data-tab]").forEach((button) => {
@@ -1419,25 +1573,37 @@
       box.hidden = false;
       box.textContent = "هذا النص معدّل بيدك. «إعادة البناء» تستبدله بالتوزيع الظاهر.";
     });
+    document.getElementById("report").addEventListener("input", () => { reportDirty = true; });
     document.getElementById("rebuild-report").addEventListener("click", () => {
-      setReport(buildReport(dateInput.value), false, "");
-      document.getElementById("copy-msg").textContent = "أُعيد بناء التقرير من توزيع هذا اليوم.";
+      setReport(buildReport(dateInput.value || todayISO()), false);
+      document.getElementById("copy-msg").textContent = "حُدّث التقرير.";
     });
     document.getElementById("copy-report").addEventListener("click", async () => {
       const button = document.getElementById("copy-report");
       const msg = document.getElementById("copy-msg");
-      const text = document.getElementById("report").value;
       try {
-        await navigator.clipboard.writeText(text);
-        button.classList.add("is-done");
-        button.textContent = "تم النسخ";
-        msg.textContent = "الصق النص في مجموعة الواتساب.";
-        setTimeout(() => { button.classList.remove("is-done"); button.textContent = "نسخ التقرير"; }, 1600);
+        await navigator.clipboard.writeText(document.getElementById("report").value);
+        button.classList.add("done");
+        button.textContent = "تم";
+        msg.textContent = "جاهز للصق في الواتساب.";
+        setTimeout(() => { button.classList.remove("done"); button.textContent = "نسخ"; }, 1400);
       } catch (err) {
         document.getElementById("report").focus();
         document.getElementById("report").select();
-        msg.textContent = "النسخ التلقائي توقف. النص محدد، اضغط Ctrl+C.";
+        msg.textContent = "حدّد النص وانسخه يدوياً.";
       }
+    });
+    document.getElementById("reset-seed").addEventListener("click", (event) => {
+      if (!wantsConfirm(event.currentTarget, "تأكيد؟")) return;
+      state = seed();
+      reportDirty = false;
+      peopleQuery = "";
+      boardQuery = "";
+      document.getElementById("people-filter").value = "";
+      document.getElementById("board-filter").value = "";
+      save();
+      applyDate(dateInput.value || todayISO(), { forceRedistribute: true, message: "رجعت الخطة الأصلية." });
+      event.currentTarget.textContent = "الأصل";
     });
 
     document.getElementById("people-filter").addEventListener("input", (event) => {
@@ -1459,19 +1625,26 @@
       const form = event.target;
       const error = document.getElementById("add-error");
       const name = form.name.value.trim();
-      if (!name) { error.hidden = false; error.textContent = "اكتب اسم المنتسب أولاً."; form.name.focus(); return; }
-      if (nameTaken(name)) { error.hidden = false; error.textContent = "هذا المنتسب موجود مسبقاً. عدّله من القائمة ولا تضفه مرتين."; form.name.focus(); return; }
+      if (!name) { error.hidden = false; error.textContent = "اكتب الاسم."; return; }
+      if (nameTaken(name)) { error.hidden = false; error.textContent = "الاسم موجود."; return; }
       error.hidden = true;
-      state.people.push({ id: nextId("p", state.people), name, rest: form.rest.value, site: form.site.value, zone: "", note: "", leave: false });
+      state.people.push({
+        id: nextId("p", state.people),
+        name,
+        rest: form.rest.value,
+        site: form.site.value,
+        zone: "",
+        note: "",
+        leave: false
+      });
       form.reset();
       form.querySelector("select[name=rest]").innerHTML = dayOptions("");
       save();
-      refreshEditors();
+      refreshAll();
     });
     document.getElementById("people-list").addEventListener("change", (event) => {
       const form = event.target.closest("form[data-person]");
-      if (!form) return;
-      commitPeopleForm(form);
+      if (form) commitPeopleForm(form);
     });
     document.getElementById("people-list").addEventListener("focusout", (event) => {
       const form = event.target.closest("form[data-person]");
@@ -1537,17 +1710,23 @@
       const form = event.target;
       const error = document.getElementById("site-error");
       const title = form.title.value.trim();
-      if (!title) { error.hidden = false; error.textContent = "اكتب اسم الموقع أولاً."; return; }
+      if (!title) { error.hidden = false; error.textContent = "اكتب اسم الموقع."; return; }
       error.hidden = true;
-      state.sites.push({ id: nextId("s", state.sites), title, fridayOnly: form.fridayOnly.checked, zones: [] });
+      state.sites.push({
+        id: nextId("s", state.sites),
+        title,
+        fridayOnly: form.fridayOnly.checked,
+        zones: []
+      });
       form.reset();
       save();
-      refreshEditors();
+      refreshAll();
     });
     document.getElementById("sites-list").addEventListener("change", (event) => {
       const form = event.target.closest("form[data-site]");
       if (!form) return;
       const site = siteById(form.dataset.site);
+      if (!site) return;
       if (event.target.name === "title") site.title = form.title.value.trim() || site.title;
       if (event.target.name === "fridayOnly") site.fridayOnly = form.fridayOnly.checked;
       save();
@@ -1569,30 +1748,34 @@
       const add = event.target.closest("[data-add-zone]");
       if (add) {
         const site = siteById(add.dataset.addZone);
+        if (!site) return;
+        site.zones = site.zones || [];
         site.zones.push({ id: nextId(site.id + "z", site.zones), label: "تفصيلة جديدة" });
         save();
-        refreshEditors();
+        refreshAll();
         return;
       }
       const zoneButton = event.target.closest("[data-delete-zone]");
       if (zoneButton) {
-        if (!wantsConfirm(zoneButton, "z" + zoneButton.dataset.zone, "تأكيد الحذف")) return;
+        if (!wantsConfirm(zoneButton, "تأكيد؟")) return;
         const site = siteById(zoneButton.dataset.deleteZone);
+        if (!site) return;
         site.zones = site.zones.filter((zone) => zone.id !== zoneButton.dataset.zone);
         state.people.forEach((person) => { if (person.zone === zoneButton.dataset.zone) person.zone = ""; });
         state.fixedPosts.forEach((f) => { if (f.zoneId === zoneButton.dataset.zone) f.zoneId = ""; });
         save();
-        refreshEditors();
+        refreshAll();
         return;
       }
       const siteButton = event.target.closest("[data-delete-site]");
-      if (!siteButton || !wantsConfirm(siteButton, "s" + siteButton.dataset.deleteSite, "تأكيد الحذف")) return;
+      if (!siteButton || !wantsConfirm(siteButton, "تأكيد؟")) return;
       const site = siteById(siteButton.dataset.deleteSite);
+      if (!site) return;
       state.sites = state.sites.filter((item) => item.id !== site.id);
       state.people.forEach((person) => { if (person.site === site.id) { person.site = ""; person.zone = ""; } });
       state.fixedPosts = (state.fixedPosts || []).filter((f) => f.siteId !== site.id);
       save();
-      refreshEditors();
+      refreshAll();
     });
 
     document.getElementById("add-fixed").addEventListener("submit", (event) => {
