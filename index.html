@@ -117,7 +117,15 @@
       letter-spacing: -0.02em;
       line-height: 1.25;
     }
-    .top .sub { margin-top: 4px; color: #c5ddd3; font-size: 0.95rem; }
+    .top .manager {
+      margin-top: 6px;
+      color: #f0c75e;
+      font-size: clamp(1.35rem, 3.2vw, 1.95rem);
+      font-weight: 800;
+      letter-spacing: -0.01em;
+      line-height: 1.3;
+      text-shadow: 0 1px 0 rgba(0, 0, 0, .18);
+    }
     .date-field {
       display: grid;
       gap: 6px;
@@ -694,15 +702,8 @@
       }
       .brand-mark { width: 36px; height: 36px; border-radius: 10px; margin-inline-end: 10px; }
       .brand-mark svg { width: 18px; height: 18px; }
-      h1 { font-size: 1.2rem; }
-      .top .sub {
-        font-size: 0.8rem;
-        line-height: 1.35;
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-      }
+      h1 { font-size: 1.15rem; }
+      .top .manager { font-size: 1.35rem; margin-top: 4px; }
       .date-field {
         display: grid;
         gap: 6px;
@@ -856,7 +857,7 @@
         </span>
         <div>
           <h1>خطة عمل الوحدة الصباحية</h1>
-          <p class="sub">شعبة المنشآت الصحية — العتبة العلوية المقدسة</p>
+          <p class="manager">محمد رياض المعموري</p>
         </div>
       </div>
       <label class="date-field">تاريخ الدوام
