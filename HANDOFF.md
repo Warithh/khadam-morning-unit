@@ -1,19 +1,15 @@
 # HANDOFF — خدام الوحدة الصباحية
 
-## آخر عمل: Cursor، 2026-11-23 (إصلاح ترحيل + نسخة احتياطية + نشر)
+## آخر عمل: Cursor، 2026-11-23 (إصلاح + نشر حذر)
 
-- إصلاح ترحيل `fixedPosts`: مرة واحدة عبر `meta.fixedMigrated` حتى المصفوفة الفارغة تستعيد حسن عبود إن وُجدت ملاحظة الغسل، دون إعادة فرض التثبيت بعد فكّه عمداً.
-- إعدادات: **تصدير الخطة** / **استيراد الخطة** (JSON).
-- فحص: `node work/audit-pure.mjs` → 16/16؛ متصفح: ترحيل من `fixedPosts:[]` → تثبيت حسن، أزرار النسخة، رفض استيراد تالف، جمعة 13 / خميس 10 مواقع.
-- رُفض: إعادة فرض التثبيت في كل تحميل (يكسر فك التثبيت العمدي).
-
-## قبلها: تدقيق خبير ثم تحسين هاتف وإعادة تصميم
-
-انظر السجل في git.
+- إصلاح ترحيل `fixedPosts` بـ `meta.fixedMigrated` + تصدير/استيراد JSON.
+- الحفظ على `khadam-morning-unit-v4` مع قراءة تراثية من `v1` عند الحاجة.
+- فرع احتياطي للنسخة المحلية: `backup/local-redesign-2026-11-23`.
+- دُمج `main` البعيد ثم أُلغي أثر الدمج الفاسد على `index.html` (كانت تتكرر المعرفات).
+- فحص: `node work/audit-pure.mjs` = 16/16.
 
 ## تشغيل
 
 - الصفحة: https://warithh.github.io/khadam-morning-unit/
 - المستودع: https://github.com/Warithh/khadam-morning-unit
-- الحفظ: `localStorage` → `khadam-morning-unit-v1`
-- اختبار المنطق: `node work/audit-pure.mjs`
+- اختبار: `node work/audit-pure.mjs`
