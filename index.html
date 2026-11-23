@@ -495,7 +495,14 @@
       font-size: 1rem;
       font-weight: 600;
     }
-    .check input { width: 18px; height: 18px; accent-color: var(--action); }
+    .check input {
+      width: 18px;
+      height: 18px;
+      min-height: 0;
+      min-width: 0;
+      padding: 0;
+      accent-color: var(--action);
+    }
 
     .person, .site-edit, .fixed-card {
       background: var(--sheet);
@@ -506,18 +513,73 @@
     }
     .person {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) auto auto;
-      gap: 10px 12px;
-      align-items: end;
+      gap: 0;
+      padding: 10px 12px;
+    }
+    .person-head {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 6px 10px;
+      align-items: center;
+    }
+    .person-summary { min-width: 0; }
+    .person-summary .who {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px 8px;
+      align-items: center;
+    }
+    .person-summary .who strong { font-size: 1.02rem; font-weight: 700; }
+    .person-side {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: nowrap;
+      gap: 6px;
+      align-items: center;
+      justify-content: flex-end;
+      flex: 0 0 auto;
+    }
+    .person-body {
+      display: none;
+      gap: 10px;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid #e4ece8;
+    }
+    .person.is-open .person-body { display: grid; }
+    .person-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: space-between;
+      align-items: center;
     }
     .fields {
-      grid-column: 1 / -1;
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 10px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px 10px;
     }
-    .person-site { color: var(--muted); font-size: 0.86rem; margin-top: 2px; font-weight: 500; }
-    .person-badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+    .fields .span-2 { grid-column: 1 / -1; }
+    .person-site { color: var(--muted); font-size: 0.82rem; margin-top: 2px; font-weight: 500; }
+    .person-badges { display: inline-flex; flex-wrap: wrap; gap: 6px; }
+    .person .check {
+      min-height: 32px;
+      margin: 0;
+      font-size: 0.86rem;
+      gap: 6px;
+    }
+    .person .soft-edit {
+      min-height: 34px;
+      padding: 4px 10px;
+      background: var(--sheet-2);
+      border: 1px solid var(--line);
+      color: var(--pine-mid);
+      border-radius: var(--radius-sm);
+      font-weight: 700;
+      font-size: 0.84rem;
+      white-space: nowrap;
+    }
+    .person .soft-edit:hover { background: #e8efeb; }
     .linkish {
       background: transparent;
       border: 0;
@@ -720,18 +782,20 @@
       .names li { padding: 10px 4px; }
       .idx { width: 30px; height: 30px; }
 
-      .add, #add-site, .fixed-add, .fields, .site-row {
+      .add, #add-site, .fixed-add, .site-row {
         display: grid;
         grid-template-columns: 1fr;
       }
-      .person, .fixed-card { grid-template-columns: 1fr; }
+      .fixed-card { grid-template-columns: 1fr; }
+      .person { padding: 8px 10px; }
+      .person-head { grid-template-columns: minmax(0, 1fr) auto; }
       .person .danger, .fixed-card .danger {
-        justify-self: stretch;
-        min-height: 48px;
+        min-height: 44px;
         border-radius: 12px;
         background: var(--danger-bg);
       }
-      .person .check { min-height: 48px; }
+      .fields { grid-template-columns: 1fr 1fr; }
+      .fields .span-2 { grid-column: 1 / -1; }
       .add button.solid, #add-site button.solid, .fixed-add button.solid {
         width: 100%;
         min-height: 50px;
@@ -997,6 +1061,7 @@
     let state = load();
     let reportDirty = false;
     let peopleQuery = "";
+    let openPersonId = null;
     let armed = null;
 
     function migrateHassanFixed(data) {
@@ -1281,25 +1346,38 @@
       const fixed = fixedByPerson(person.id);
       const zones = site ? site.zones || [] : [];
       const locked = !!fixed;
-      const zoneField = zones.length
-        ? `<label>التفصيلة داخل الموقع<select name="zone"${locked ? " disabled" : ""}>${zoneOptions(person.site, person.zone)}</select></label>`
-        : `<input type="hidden" name="zone" value="">`;
+      const open = openPersonId === person.id;
       const badges = [];
       if (fixed) badges.push(`<span class="chip chip-fixed">ثابت${fixed.label ? " · " + esc(fixed.label) : ""}</span>`);
       if (person.leave) badges.push(`<span class="chip" style="background:var(--warn-bg);color:var(--warn)">مجاز</span>`);
-      return `<form class="person" data-person="${esc(person.id)}">
-        <label>الاسم
-          <input name="name" value="${esc(person.name)}" required autocomplete="off">
-          <span class="person-site">${site ? esc(site.title) : "بلا موقع عمل بعد"}${locked ? " — مقفول من الإعدادات" : ""}</span>
-          ${badges.length ? `<div class="person-badges">${badges.join("")}</div>` : ""}
-        </label>
-        <label class="check"><input name="leave" type="checkbox"${person.leave ? " checked" : ""}> مجاز</label>
-        <button type="button" class="danger" data-delete-person="${esc(person.id)}">حذف</button>
-        <div class="fields">
-          <label>الاستراحة<select name="rest">${dayOptions(person.rest)}</select></label>
-          <label>موقع العمل<select name="site"${locked ? " disabled" : ""}>${siteOptions(person.site)}</select></label>
-          ${zoneField}
-          <label>ملاحظة التقرير<input name="note" value="${esc(person.note)}" autocomplete="off"></label>
+      const siteLine = (site ? esc(site.title) : "بلا موقع") + (locked ? " · مقفول" : "");
+      const zoneField = zones.length
+        ? `<label>التفصيلة<select name="zone"${locked ? " disabled" : ""}>${zoneOptions(person.site, person.zone)}</select></label>`
+        : "";
+      return `<form class="person${open ? " is-open" : ""}" data-person="${esc(person.id)}">
+        <div class="person-head">
+          <div class="person-summary">
+            <div class="who"><strong>${esc(person.name)}</strong>${badges.join("")}</div>
+            <div class="person-site">${siteLine}</div>
+          </div>
+          <div class="person-side">
+            <button type="button" class="soft-edit" data-toggle-person="${esc(person.id)}">${open ? "إغلاق" : "تعديل"}</button>
+            <label class="check"><input name="leave" type="checkbox"${person.leave ? " checked" : ""}> مجاز</label>
+          </div>
+        </div>
+        <div class="person-body">
+          ${zones.length ? "" : `<input type="hidden" name="zone" value="">`}
+          <div class="fields">
+            <label class="span-2">الاسم<input name="name" value="${esc(person.name)}" required autocomplete="off"></label>
+            <label>الاستراحة<select name="rest">${dayOptions(person.rest)}</select></label>
+            <label>الموقع<select name="site"${locked ? " disabled" : ""}>${siteOptions(person.site)}</select></label>
+            ${zoneField}
+            <label class="span-2">ملاحظة التقرير<input name="note" value="${esc(person.note)}" autocomplete="off"></label>
+          </div>
+          <div class="person-actions">
+            <span class="meta">${locked ? "الموقع يُغيَّر من الإعدادات" : ""}</span>
+            <button type="button" class="danger" data-delete-person="${esc(person.id)}">حذف المنتسب</button>
+          </div>
         </div>
       </form>`;
     }
@@ -1493,11 +1571,19 @@
       if (form && (event.target.name === "name" || event.target.name === "note")) commitPeopleForm(form);
     });
     document.getElementById("people-list").addEventListener("click", (event) => {
+      const toggle = event.target.closest("[data-toggle-person]");
+      if (toggle) {
+        const id = toggle.dataset.togglePerson;
+        openPersonId = openPersonId === id ? null : id;
+        paintPeople();
+        return;
+      }
       const button = event.target.closest("[data-delete-person]");
       if (!button || !wantsConfirm(button, button.dataset.deletePerson, "تأكيد الحذف")) return;
       const pid = button.dataset.deletePerson;
       state.people = state.people.filter((item) => item.id !== pid);
       state.fixedPosts = (state.fixedPosts || []).filter((f) => f.personId !== pid);
+      if (openPersonId === pid) openPersonId = null;
       save();
       refreshEditors();
     });
